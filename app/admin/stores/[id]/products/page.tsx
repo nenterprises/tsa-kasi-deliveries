@@ -241,16 +241,7 @@ export default function StoreProductsAdminPage() {
               <div className="text-gray-400 text-sm">No categories yet.</div>
             ) : (
               categories.map(c => (
-                <span key={c.id} className="px-3 py-1 rounded border border-gray-700 text-gray-200 text-sm bg-gray-800 flex items-center gap-2">
-                  {c.name}
-                  <button
-                    onClick={() => handleDeleteCategory(c.id, c.name)}
-                    className="text-red-400 hover:text-red-300 ml-1"
-                    title="Delete category"
-                  >
-                    ✕
-                  </button>
-                </span>
+                <span key={c.id} className="px-3 py-1 rounded border border-gray-700 text-gray-200 text-sm bg-gray-800">{c.name}</span>
               ))
             )}
           </div>
