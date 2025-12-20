@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Spinner utilities (neutral, minimal, tree-shake friendly) */
+:root { --spinner-fg: rgba(0,0,0,.8); --spinner-bg: rgba(0,0,0,.15); }
+@media (prefers-color-scheme: dark) {
+  :root { --spinner-fg: rgba(255,255,255,.85); --spinner-bg: rgba(255,255,255,.25); }
+}
+
+@keyframes spinner-rotate { to { transform: rotate(360deg); } }
+.u-spin { animation: spinner-rotate .8s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .u-spin { animation: none; }
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 17, 17, 17;
+  --kasi-orange: #ff6b35;
+  --kasi-blue: #00b4d8;
+  --kasi-black: #000000;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      135deg,
+      rgb(var(--background-start-rgb)) 0%,
+      rgb(var(--background-end-rgb)) 100%
+    );
+  min-height: 100vh;
+  font-family: 'Inter', 'Poppins', 'Montserrat', sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .text-kasi-orange {
+    color: var(--kasi-orange);
+  }
+  
+  .text-kasi-blue {
+    color: var(--kasi-blue);
+  }
+  
+  .bg-kasi-orange {
+    background-color: var(--kasi-orange);
+  }
+  
+  .bg-kasi-blue {
+    background-color: var(--kasi-blue);
+  }
+  
+  .bg-kasi-black {
+    background-color: var(--kasi-black);
+  }
+  
+  .border-kasi-orange {
+    border-color: var(--kasi-orange);
+  }
+  
+  .border-kasi-blue {
+    border-color: var(--kasi-blue);
+  }
+}
