@@ -16,7 +16,7 @@ export default function StorePage() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [activeCategoryId, setActiveCategoryId] = useState<string>('')
-  const [showSidebar, setShowSidebar] = useState(true)
+  const [showSidebar, setShowSidebar] = useState(false)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [addedToCart, setAddedToCart] = useState<string | null>(null)
