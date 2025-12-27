@@ -196,7 +196,7 @@ export default function AdminLayout({
         </header>
 
         {/* Page Content */}
-        <main className="p-6 bg-gray-950 min-h-screen">
+        <main className="p-3 sm:p-6 bg-gray-950 min-h-screen">
           {children}
         </main>
       </div>

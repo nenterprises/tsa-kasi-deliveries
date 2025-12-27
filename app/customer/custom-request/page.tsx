@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Store } from '@/types'
 import { useActiveOrdersCount } from '@/lib/useActiveOrders'
 
-export default function CustomRequestPage() {
+function CustomRequestContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedStoreId = searchParams.get('store')
@@ -61,7 +61,7 @@ export default function CustomRequestPage() {
         return
       }
 
-      // Create order with custom request
+      // Create order with custom request - cash on delivery only
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -71,10 +71,11 @@ export default function CustomRequestPage() {
           custom_request_text: formData.requestText,
           delivery_address: formData.deliveryAddress,
           delivery_township: formData.deliveryTownship,
-          total_amount: 0, // Will be updated by admin after purchase
-          delivery_fee: 0, // Will be calculated by admin
+          total_amount: 0, // Customer pays on delivery
+          delivery_fee: 15, // Flat delivery fee
           status: 'pending',
           payment_status: 'pending',
+          payment_method: 'yoco', // Online payment only
         })
         .select()
         .single()
@@ -214,14 +215,13 @@ export default function CustomRequestPage() {
               </select>
             </div>
 
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-              <h3 className="font-semibold text-white mb-2">How it works:</h3>
-              <ol className="list-decimal list-inside space-y-1 text-sm text-gray-300">
-                <li>Submit your custom request</li>
-                <li>Our team will purchase the items from the store</li>
-                <li>You'll receive the total cost (items + delivery fee)</li>
-                <li>Make payment to confirm</li>
-                <li>Your order will be delivered!</li>
+            <div className="bg-secondary-900/20 border border-secondary-700/50 rounded-lg p-4">
+              <h3 className="font-semibold text-secondary-200 mb-2">💳 How it works:</h3>
+              <ol className="list-decimal list-inside space-y-1 text-sm text-secondary-200/80">
+                <li>Submit your request (tell us what you need)</li>
+                <li>Pay online securely</li>
+                <li>Agent picks up your items from the store</li>
+                <li>Items delivered to your door!</li>
               </ol>
             </div>
 
@@ -236,5 +236,20 @@ export default function CustomRequestPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function CustomRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-kasi-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kasi-blue mx-auto"></div>
+          <p className="mt-4 text-gray-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CustomRequestContent />
+    </Suspense>
   )
 }

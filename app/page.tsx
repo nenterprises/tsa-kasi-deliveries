@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Bag, Motorcycle } from '@phosphor-icons/react'
+import { ShoppingCart, Motorcycle } from '@phosphor-icons/react'
 
 export default function Home() {
   return (
@@ -30,15 +30,15 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
           <Link 
             href="/customer/stores" 
-            className="bg-kasi-orange text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition transform hover:scale-105 shadow-lg shadow-orange-500/50 flex items-center justify-center gap-2"
+            className="bg-kasi-orange text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition transform hover:scale-105 shadow-lg shadow-orange-500/50 flex items-center justify-center gap-3"
           >
-            <Bag size={24} weight="fill" /> Order Now
+            <ShoppingCart size={28} weight="fill" /> Order Now
           </Link>
           <Link 
             href="/agent/login" 
-            className="bg-kasi-blue text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition transform hover:scale-105 shadow-lg shadow-blue-500/50 flex items-center justify-center gap-2"
+            className="bg-kasi-blue text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition transform hover:scale-105 shadow-lg shadow-blue-500/50 flex items-center justify-center gap-3"
           >
-            <Motorcycle size={24} weight="fill" /> Drive for Us
+            <Motorcycle size={28} weight="fill" className="text-red-400" /> Drive for Us
           </Link>
         </div>
       </div>

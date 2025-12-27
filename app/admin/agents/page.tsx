@@ -339,7 +339,6 @@ export default function AgentsPage() {
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-800 text-xs text-gray-500">
                   <span>Last Active: {formatDate(agent.profile?.last_active_at)}</span>
                   <span>Joined: {formatDate(agent.created_at)}</span>
-                  <span>Cash Balance: R{agent.wallet?.company_cash_balance?.toFixed(2) || '0.00'}</span>
                 </div>
               </div>
             )
@@ -428,24 +427,20 @@ export default function AgentsPage() {
                   </div>
                 </div>
 
-                {/* Wallet Info */}
+                {/* Earnings Info */}
                 <div className="bg-gray-800/50 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-300 mb-3">Wallet</h3>
+                  <h3 className="text-sm font-medium text-gray-300 mb-3">Earnings</h3>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-400">Company Cash Balance</p>
+                      <p className="text-xs text-gray-400">Total Deliveries</p>
                       <p className="text-2xl font-bold text-green-400">
-                        R{selectedAgent.wallet?.company_cash_balance?.toFixed(2) || '0.00'}
+                        {selectedAgent.profile?.orders_completed || 0}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-gray-400">Cash Limit</p>
-                      <p className="text-lg text-white">R{selectedAgent.wallet?.max_cash_limit?.toFixed(2) || '500.00'}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400">Wallet Status</p>
-                      <p className={`text-lg font-medium ${selectedAgent.wallet?.status === 'active' ? 'text-green-400' : 'text-red-400'}`}>
-                        {selectedAgent.wallet?.status || 'N/A'}
+                      <p className="text-xs text-gray-400">Status</p>
+                      <p className={`text-lg font-medium ${selectedAgent.profile?.agent_status === 'active' ? 'text-green-400' : 'text-yellow-400'}`}>
+                        {selectedAgent.profile?.agent_status || 'Pending'}
                       </p>
                     </div>
                   </div>

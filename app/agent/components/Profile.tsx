@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { User, AgentProfile as AgentProfileType, AgentWallet } from '@/types'
+import type { User, AgentProfile as AgentProfileType } from '@/types'
+import { Camera, Award, Package, CheckCircle, XCircle } from 'lucide-react'
 
 interface ProfileProps {
   agentId: string
   agent: User | null
-  wallet: AgentWallet | null
   onUpdate: () => void
 }
 
-export default function Profile({ agentId, agent, wallet, onUpdate }: ProfileProps) {
+export default function Profile({ agentId, agent, onUpdate }: ProfileProps) {
   const [profile, setProfile] = useState<AgentProfileType | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -21,7 +21,6 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Editable fields
-  const [idNumber, setIdNumber] = useState('')
   const [homeArea, setHomeArea] = useState('')
   const [township, setTownship] = useState('')
 
@@ -43,12 +42,11 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
 
       if (data) {
         setProfile(data)
-        setIdNumber(data.id_number || '')
         setHomeArea(data.home_area || '')
         setTownship(data.township || '')
       } else {
         // Create profile if doesn't exist
-        const { data: newProfile, error: createError } = await supabase
+        const { data: newProfile } = await supabase
           .from('agent_profiles')
           .insert({ agent_id: agentId })
           .select()
@@ -74,7 +72,6 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
       const { error } = await supabase
         .from('agent_profiles')
         .update({
-          id_number: idNumber,
           home_area: homeArea,
           township: township
         })
@@ -82,11 +79,12 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
 
       if (error) throw error
 
-      setSuccess('Profile updated successfully!')
+      setSuccess('Profile updated!')
+      setTimeout(() => setSuccess(''), 3000)
       loadProfile()
       onUpdate()
     } catch (err: any) {
-      setError(err.message || 'Failed to save profile')
+      setError(err.message || 'Failed to save')
     } finally {
       setSaving(false)
     }
@@ -96,7 +94,6 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file
     if (!file.type.startsWith('image/')) {
       setError('Please select an image file')
       return
@@ -114,19 +111,16 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
       const fileName = `${agentId}-${Date.now()}.${fileExt}`
       const filePath = `agent-photos/${fileName}`
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('agent-profiles')
         .upload(filePath, file, { upsert: true })
 
       if (uploadError) throw uploadError
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('agent-profiles')
         .getPublicUrl(filePath)
 
-      // Update profile with photo URL
       const { error: updateError } = await supabase
         .from('agent_profiles')
         .update({ profile_photo_url: publicUrl })
@@ -134,7 +128,8 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
 
       if (updateError) throw updateError
 
-      setSuccess('Photo uploaded successfully!')
+      setSuccess('Photo uploaded!')
+      setTimeout(() => setSuccess(''), 3000)
       loadProfile()
     } catch (err: any) {
       setError(err.message || 'Failed to upload photo')
@@ -144,52 +139,25 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
   }
 
   const getReliabilityRating = () => {
-    if (!profile) return { label: 'New', color: 'text-gray-400', bg: 'bg-gray-800' }
+    if (!profile) return { label: 'New', color: 'text-gray-400', bg: 'bg-gray-800', stars: 0 }
     
     const total = profile.orders_completed + profile.orders_cancelled
-    if (total < 5) return { label: 'New', color: 'text-gray-400', bg: 'bg-gray-800' }
+    if (total < 5) return { label: 'New', color: 'text-gray-400', bg: 'bg-gray-800', stars: 0 }
     
     const completionRate = profile.orders_completed / total
-    const issueRate = profile.receipt_issues / Math.max(profile.orders_completed, 1)
     
-    if (completionRate >= 0.95 && issueRate < 0.05) {
-      return { label: 'Excellent', color: 'text-green-400', bg: 'bg-green-900/30' }
-    } else if (completionRate >= 0.85 && issueRate < 0.1) {
-      return { label: 'Good', color: 'text-blue-400', bg: 'bg-blue-900/30' }
+    if (completionRate >= 0.95) {
+      return { label: 'Excellent', color: 'text-green-400', bg: 'bg-green-900/30', stars: 5 }
+    } else if (completionRate >= 0.85) {
+      return { label: 'Good', color: 'text-blue-400', bg: 'bg-blue-900/30', stars: 4 }
     } else if (completionRate >= 0.7) {
-      return { label: 'Fair', color: 'text-yellow-400', bg: 'bg-yellow-900/30' }
+      return { label: 'Fair', color: 'text-yellow-400', bg: 'bg-yellow-900/30', stars: 3 }
     } else {
-      return { label: 'Needs Improvement', color: 'text-red-400', bg: 'bg-red-900/30' }
+      return { label: 'Needs Work', color: 'text-red-400', bg: 'bg-red-900/30', stars: 2 }
     }
-  }
-
-  const getStatusBadge = () => {
-    const status = profile?.agent_status || 'active'
-    switch (status) {
-      case 'active':
-        return { label: 'Active', color: 'bg-green-500/20 text-green-400 border-green-500/30' }
-      case 'temporarily_suspended':
-        return { label: 'Temporarily Suspended', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' }
-      case 'blacklisted':
-        return { label: 'Blacklisted', color: 'bg-red-500/20 text-red-400 border-red-500/30' }
-      default:
-        return { label: status, color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' }
-    }
-  }
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return 'Never'
-    return new Date(dateStr).toLocaleDateString('en-ZA', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
   }
 
   const reliability = getReliabilityRating()
-  const statusBadge = getStatusBadge()
 
   if (loading) {
     return (
@@ -203,10 +171,10 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
     <div className="space-y-6">
       {/* Profile Header Card */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <div className="flex flex-col items-center text-center">
           {/* Profile Photo */}
-          <div className="relative">
-            <div className="w-28 h-28 rounded-full bg-gray-800 border-4 border-gray-700 overflow-hidden flex items-center justify-center">
+          <div className="relative mb-4">
+            <div className="w-24 h-24 rounded-full bg-gray-800 border-4 border-gray-700 overflow-hidden flex items-center justify-center">
               {profile?.profile_photo_url ? (
                 <img
                   src={profile.profile_photo_url}
@@ -225,7 +193,7 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
               {uploading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               ) : (
-                <span className="text-sm">📷</span>
+                <Camera className="w-4 h-4" />
               )}
             </button>
             <input
@@ -237,51 +205,33 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
             />
           </div>
 
-          {/* Basic Info */}
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-bold text-white">{agent?.full_name || 'Agent'}</h2>
-            <p className="text-gray-400 mt-1">{agent?.phone_number || 'No phone number'}</p>
-            
-            <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
-              <span className={`px-3 py-1 text-sm font-medium rounded-full border ${statusBadge.color}`}>
-                {statusBadge.label}
-              </span>
-              <span className={`px-3 py-1 text-sm font-medium rounded-full ${reliability.bg} ${reliability.color}`}>
-                Reliability: {reliability.label}
-              </span>
-            </div>
-          </div>
-
-          {/* Wallet Info */}
-          <div className="text-center sm:text-right">
-            <p className="text-xs text-gray-400 uppercase tracking-wide">Company Cash</p>
-            <p className="text-2xl font-bold text-green-400">
-              R{wallet?.company_cash_balance?.toFixed(2) || '0.00'}
-            </p>
-            <p className="text-xs text-gray-500">
-              Limit: R{wallet?.max_cash_limit?.toFixed(2) || '500.00'}
-            </p>
+          {/* Name & Status */}
+          <h2 className="text-xl font-bold text-white">{agent?.full_name || 'Agent'}</h2>
+          <p className="text-gray-400 text-sm mt-1">{agent?.phone_number || 'No phone'}</p>
+          
+          {/* Reliability Badge */}
+          <div className={`mt-3 px-4 py-2 rounded-full ${reliability.bg} ${reliability.color} flex items-center gap-2`}>
+            <Award className="w-4 h-4" />
+            <span className="font-medium">{reliability.label}</span>
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-          <p className="text-3xl font-bold text-white">{profile?.orders_completed || 0}</p>
-          <p className="text-sm text-gray-400 mt-1">Completed</p>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <CheckCircle className="w-5 h-5 text-green-400" />
+          </div>
+          <p className="text-2xl font-bold text-white">{profile?.orders_completed || 0}</p>
+          <p className="text-sm text-gray-400">Completed</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-          <p className="text-3xl font-bold text-white">{profile?.orders_cancelled || 0}</p>
-          <p className="text-sm text-gray-400 mt-1">Cancelled</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-          <p className="text-3xl font-bold text-white">{profile?.receipt_issues || 0}</p>
-          <p className="text-sm text-gray-400 mt-1">Receipt Issues</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-          <p className="text-sm font-medium text-white">{formatDate(profile?.last_active_at)}</p>
-          <p className="text-sm text-gray-400 mt-1">Last Active</p>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <XCircle className="w-5 h-5 text-red-400" />
+          </div>
+          <p className="text-2xl font-bold text-white">{profile?.orders_cancelled || 0}</p>
+          <p className="text-sm text-gray-400">Cancelled</p>
         </div>
       </div>
 
@@ -304,19 +254,6 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
-              ID Number
-            </label>
-            <input
-              type="text"
-              value={idNumber}
-              onChange={(e) => setIdNumber(e.target.value)}
-              placeholder="Enter your SA ID number"
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-secondary-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
               Home Area
             </label>
             <input
@@ -324,7 +261,7 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
               value={homeArea}
               onChange={(e) => setHomeArea(e.target.value)}
               placeholder="e.g., Section B, Zone 3"
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-secondary-500"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-secondary-500"
             />
           </div>
 
@@ -335,7 +272,7 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
             <select
               value={township}
               onChange={(e) => setTownship(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-secondary-500"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-secondary-500"
             >
               <option value="">Select Township</option>
               <option value="modimolle">Modimolle</option>
@@ -348,33 +285,31 @@ export default function Profile({ agentId, agent, wallet, onUpdate }: ProfilePro
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full sm:w-auto px-6 py-2 bg-secondary-600 hover:bg-secondary-500 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-secondary-600 hover:bg-secondary-500 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
 
-      {/* Read-only Info Card */}
+      {/* Account Info */}
       <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Account Information</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">Account Info</h3>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-400">Email</span>
             <span className="text-white">{agent?.email || '-'}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-400">Phone Number</span>
+            <span className="text-gray-400">Phone</span>
             <span className="text-white">{agent?.phone_number || '-'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-400">Member Since</span>
-            <span className="text-white">{formatDate(agent?.created_at)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Wallet Status</span>
-            <span className={`font-medium ${wallet?.status === 'active' ? 'text-green-400' : 'text-red-400'}`}>
-              {wallet?.status || 'N/A'}
+            <span className="text-white">
+              {agent?.created_at 
+                ? new Date(agent.created_at).toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' })
+                : '-'}
             </span>
           </div>
         </div>

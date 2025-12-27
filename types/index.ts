@@ -123,6 +123,7 @@ export interface AgentProfile {
   home_area?: string
   township?: string
   agent_status: AgentStatus
+  is_online: boolean
   orders_completed: number
   orders_cancelled: number
   receipt_issues: number

@@ -64,15 +64,23 @@ export default function CartPage() {
     <div className="min-h-screen bg-kasi-black">
       {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/customer/stores" className="text-gray-300 hover:text-kasi-blue font-medium">
-              ← Continue Shopping
-            </Link>
-            <h1 className="text-2xl font-bold text-white">Shopping Cart ({totalItems})</h1>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+            <div className="flex items-center justify-between">
+              <Link href="/customer/stores" className="text-gray-300 hover:text-kasi-blue font-medium text-sm sm:text-base">
+                ← Continue Shopping
+              </Link>
+              <button
+                onClick={clearCart}
+                className="text-red-400 hover:text-red-300 font-medium text-sm sm:text-base sm:hidden"
+              >
+                Clear
+              </button>
+            </div>
+            <h1 className="text-lg sm:text-2xl font-bold text-white text-center">Shopping Cart ({totalItems})</h1>
             <button
               onClick={clearCart}
-              className="text-red-400 hover:text-red-300 font-medium"
+              className="text-red-400 hover:text-red-300 font-medium hidden sm:block"
             >
               Clear Cart
             </button>
@@ -80,26 +88,26 @@ export default function CartPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-6">
             {Object.entries(groupedByStore).map(([storeName, storeItems]) => (
               <div key={storeName} className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
-                <div className="bg-gray-800 px-6 py-3 border-b border-gray-700">
+                <div className="bg-gray-800 px-4 sm:px-6 py-3 border-b border-gray-700">
                   <h3 className="font-semibold text-white">{storeName}</h3>
                 </div>
                 <div className="divide-y divide-gray-800">
                   {storeItems.map((item) => (
                     <div
                       key={item.id}
-                      className={`p-6 transition-opacity duration-300 ${
+                      className={`p-4 sm:p-6 transition-opacity duration-300 ${
                         removingId === item.id ? 'opacity-0' : 'opacity-100'
                       }`}
                     >
-                      <div className="flex gap-4">
+                      <div className="flex flex-col sm:flex-row gap-4">
                         {item.image_url && (
-                          <div className="w-24 h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                          <div className="w-full sm:w-24 h-32 sm:h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
                             <img
                               src={item.image_url}
                               alt={item.name}
@@ -116,7 +124,7 @@ export default function CartPage() {
                             R{item.price.toFixed(2)}
                           </p>
                         </div>
-                        <div className="flex flex-col items-end gap-3">
+                        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -124,7 +132,7 @@ export default function CartPage() {
                             >
                               -
                             </button>
-                            <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                            <span className="w-8 sm:w-12 text-center font-semibold">{item.quantity}</span>
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               className="w-8 h-8 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-bold transition"
@@ -132,15 +140,17 @@ export default function CartPage() {
                               +
                             </button>
                           </div>
-                          <p className="font-bold text-white">
-                            R{(item.price * item.quantity).toFixed(2)}
-                          </p>
-                          <button
-                            onClick={() => handleRemove(item.id)}
-                            className="text-red-400 hover:text-red-300 text-sm font-medium"
-                          >
-                            Remove
-                          </button>
+                          <div className="flex items-center gap-3 sm:flex-col sm:items-end">
+                            <p className="font-bold text-white">
+                              R{(item.price * item.quantity).toFixed(2)}
+                            </p>
+                            <button
+                              onClick={() => handleRemove(item.id)}
+                              className="text-red-400 hover:text-red-300 text-sm font-medium"
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -152,7 +162,7 @@ export default function CartPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 sticky top-24">
+            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 sticky top-24">
               <h2 className="text-xl font-bold text-white mb-4">Order Summary</h2>
               
               <div className="space-y-3 mb-6">

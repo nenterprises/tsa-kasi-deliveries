@@ -11,7 +11,7 @@ type StatBuckets = {
   avgMinutesToDeliver: number | null
 }
 
-const STAT_STATUSES = ['pending','assigned','purchased','on_the_way','delivered','cancelled']
+const STAT_STATUSES = ['pending','assigned','picked_up','on_the_way','delivered','cancelled']
 
 export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
@@ -82,7 +82,7 @@ export default function OrdersPage() {
           let deliveredCount = 0
           let totalMinutes = 0
           rows.forEach(o => {
-            const key = (o.status === 'received') ? 'assigned' : (o.status === 'cash_approved' || o.status === 'cash_requested') ? 'assigned' : o.status
+            const key = (o.status === 'received') ? 'assigned' : o.status
             r.byStatus[key] = (r.byStatus[key] || 0) + 1
             if (key === 'delivered') {
               const created = new Date(o.created_at).getTime()
@@ -166,92 +166,82 @@ export default function OrdersPage() {
       </div>
 
       {/* Summary Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
         <StatCard title="Orders Today" value={loading ? '—' : today.total} sub={`Delivered: ${today.byStatus.delivered || 0}`} />
         <StatCard title="Orders Last 7 Days" value={loading ? '—' : last7d.total} sub={`Delivered: ${last7d.byStatus.delivered || 0}`} />
         <StatCard title="All-Time Orders" value={loading ? '—' : allTime.total} sub={`Delivered: ${allTime.byStatus.delivered || 0}`} />
       </div>
 
       {/* Revenue & SLA */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
         <StatCard title="Revenue Today" value={loading ? '—' : `R${today.revenue.toFixed(2)}`} />
         <StatCard title="Revenue 7 Days" value={loading ? '—' : `R${last7d.revenue.toFixed(2)}`} />
         <StatCard title="Avg Delivery Time (7d)" value={loading ? '—' : (last7d.avgMinutesToDeliver ? `${last7d.avgMinutesToDeliver}m` : '—')} />
       </div>
 
       {/* Status Breakdown (7d) */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Status Breakdown (Last 7 Days)</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
           {STAT_STATUSES.map(s => (
-            <div key={s} className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-center">
-              <p className="text-xs text-gray-400 capitalize">{s.replace('_',' ')}</p>
-              <p className="text-xl font-bold text-white">{loading ? '—' : (last7d.byStatus[s] || 0)}</p>
+            <div key={s} className="bg-gray-800 border border-gray-700 rounded-lg p-2 sm:p-3 text-center">
+              <p className="text-[10px] sm:text-xs text-gray-400 capitalize truncate">{s.replace('_',' ')}</p>
+              <p className="text-lg sm:text-xl font-bold text-white">{loading ? '—' : (last7d.byStatus[s] || 0)}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Active Orders with Tracking */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mt-6">
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 mt-6">
         <h3 className="text-lg font-semibold text-white mb-4">Active Orders</h3>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="inline-block min-w-full align-middle px-4 sm:px-0">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-400">
-                <th className="py-2 pr-4">Order</th>
-                <th className="py-2 pr-4">Store</th>
-                <th className="py-2 pr-4">Type</th>
-                <th className="py-2 pr-4">Address</th>
-                <th className="py-2 pr-4">Customer</th>
-                <th className="py-2 pr-4">Agent</th>
-                <th className="py-2 pr-4">Progress</th>
-                <th className="py-2 pr-4">Status</th>
-                <th className="py-2 pr-4">Total</th>
-                <th className="py-2 pr-4">Created</th>
-                <th className="py-2 pr-4">Actions</th>
+              <tr className="text-left text-gray-400 text-xs sm:text-sm">
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Order</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Store</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden md:table-cell">Address</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden lg:table-cell">Customer</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden lg:table-cell">Agent</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden sm:table-cell">Progress</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Status</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Total</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden md:table-cell">Created</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
               {activeOrders.map((o) => {
-                const steps = ['pending','assigned','purchased','on_the_way','delivered']
-                const normalize = (s: string) => s === 'received' || s === 'cash_approved' || s === 'cash_requested' ? 'assigned' : s
+                const steps = ['pending','assigned','picked_up','on_the_way','delivered']
+                const normalize = (s: string) => s === 'received' ? 'assigned' : s
                 const cur = normalize(o.status)
                 const idx = steps.indexOf(cur)
                 const pct = `${Math.max(0, idx) / (steps.length - 1) * 100}%`
                 const total = Number(o.total_amount || 0) + Number(o.delivery_fee || 0)
-                const pt = (o.purchase_type as string | null)
-                const typeLabel = pt === 'CPO' ? 'CPO' : pt === 'APO' ? 'APO' : 'APO'
-                const typeClass = pt === 'CPO'
-                  ? 'bg-secondary-900/30 text-secondary-300 border-secondary-700'
-                  : 'bg-primary-900/30 text-primary-300 border-primary-700'
                 return (
                   <tr key={o.id} className="border-t border-gray-800">
-                    <td className="py-3 pr-4 text-white">#{String(o.id).slice(0,8)}</td>
-                    <td className="py-3 pr-4 text-gray-300">{o.store?.name || '—'}</td>
-                    <td className="py-3 pr-4">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${typeClass}`}>
-                        {typeLabel}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4 text-gray-400">{o.delivery_address}, {o.delivery_township}</td>
-                    <td className="py-3 pr-4 text-gray-300">{o.customer?.full_name || '—'}</td>
-                    <td className="py-3 pr-4 text-gray-300">{o.agent?.full_name || '—'}</td>
-                    <td className="py-3 pr-4">
-                      <div className="relative w-40">
+                    <td className="py-3 pr-3 sm:pr-4 text-white whitespace-nowrap">#{String(o.id).slice(0,8)}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-300 whitespace-nowrap">{o.store?.name || '—'}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-400 hidden md:table-cell">{o.delivery_address}, {o.delivery_township}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-300 hidden lg:table-cell">{o.customer?.full_name || '—'}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-300 hidden lg:table-cell">{o.agent?.full_name || '—'}</td>
+                    <td className="py-3 pr-3 sm:pr-4 hidden sm:table-cell">
+                      <div className="relative w-24 sm:w-40">
                         <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1 bg-gray-700" />
                         <div className="absolute top-1/2 -translate-y-1/2 left-0 h-1 bg-kasi-orange" style={{ width: pct }} />
                         <div className="flex justify-between relative">
                           {steps.map((s, i) => (
-                            <span key={s} className={`w-3 h-3 rounded-full ${i <= idx ? 'bg-kasi-orange' : 'bg-gray-600'}`} />
+                            <span key={s} className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${i <= idx ? 'bg-kasi-orange' : 'bg-gray-600'}`} />
                           ))}
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 pr-4 text-gray-300 capitalize">{cur.replace('_',' ')}</td>
-                    <td className="py-3 pr-4 text-white">R{total.toFixed(2)}</td>
-                    <td className="py-3 pr-4 text-gray-400">{new Date(o.created_at).toLocaleString()}</td>
-                    <td className="py-3 pr-4">
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-300 capitalize whitespace-nowrap text-xs sm:text-sm">{cur.replace('_',' ')}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-white whitespace-nowrap">R{total.toFixed(2)}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-400 hidden md:table-cell whitespace-nowrap">{new Date(o.created_at).toLocaleString()}</td>
+                    <td className="py-3 pr-3 sm:pr-4">
                       <Link href={`/admin/orders/${o.id}`} className="text-kasi-blue hover:opacity-90">View</Link>
                     </td>
                   </tr>
@@ -259,46 +249,42 @@ export default function OrdersPage() {
               })}
               {activeOrders.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="py-6 text-center text-gray-500">No active orders</td>
+                  <td colSpan={10} className="py-6 text-center text-gray-500">No active orders</td>
                 </tr>
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
       {/* Orders History */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mt-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 mt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <div>
             <h3 className="text-lg font-semibold text-white">Orders History</h3>
             <p className="text-sm text-gray-400">Successfully delivered orders</p>
           </div>
           <span className="text-sm text-gray-500">{historyOrders.length} orders shown</span>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="inline-block min-w-full align-middle px-4 sm:px-0">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-400">
-                <th className="py-2 pr-4">Order</th>
-                <th className="py-2 pr-4">Store</th>
-                <th className="py-2 pr-4">Type</th>
-                <th className="py-2 pr-4">Address</th>
-                <th className="py-2 pr-4">Total</th>
-                <th className="py-2 pr-4">Created</th>
-                <th className="py-2 pr-4">Delivered</th>
-                <th className="py-2 pr-4">Duration</th>
-                <th className="py-2 pr-4">Actions</th>
+              <tr className="text-left text-gray-400 text-xs sm:text-sm">
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Order</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Store</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden md:table-cell">Address</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Total</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden sm:table-cell">Created</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden sm:table-cell">Delivered</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap hidden lg:table-cell">Duration</th>
+                <th className="py-2 pr-3 sm:pr-4 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
               {historyOrders.map((o) => {
                 const total = Number(o.total_amount || 0) + Number(o.delivery_fee || 0)
-                const pt = (o.purchase_type as string | null)
-                const typeLabel = pt === 'CPO' ? 'CPO' : pt === 'APO' ? 'APO' : 'APO'
-                const typeClass = pt === 'CPO'
-                  ? 'bg-secondary-900/30 text-secondary-300 border-secondary-700'
-                  : 'bg-primary-900/30 text-primary-300 border-primary-700'
                 const created = new Date(o.created_at)
                 const delivered = new Date(o.updated_at)
                 const durationMins = Math.round((delivered.getTime() - created.getTime()) / 60000)
@@ -307,19 +293,14 @@ export default function OrdersPage() {
                   : `${Math.floor(durationMins / 60)}h ${durationMins % 60}m`
                 return (
                   <tr key={o.id} className="border-t border-gray-800">
-                    <td className="py-3 pr-4 text-white">#{String(o.id).slice(0,8)}</td>
-                    <td className="py-3 pr-4 text-gray-300">{o.store?.name || '—'}</td>
-                    <td className="py-3 pr-4">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${typeClass}`}>
-                        {typeLabel}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4 text-gray-400">{o.delivery_address}, {o.delivery_township}</td>
-                    <td className="py-3 pr-4 text-white">R{total.toFixed(2)}</td>
-                    <td className="py-3 pr-4 text-gray-400">{created.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
-                    <td className="py-3 pr-4 text-green-400">{delivered.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
-                    <td className="py-3 pr-4 text-gray-300">{durationStr}</td>
-                    <td className="py-3 pr-4">
+                    <td className="py-3 pr-3 sm:pr-4 text-white whitespace-nowrap">#{String(o.id).slice(0,8)}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-300 whitespace-nowrap">{o.store?.name || '—'}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-400 hidden md:table-cell">{o.delivery_address}, {o.delivery_township}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-white whitespace-nowrap">R{total.toFixed(2)}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-400 hidden sm:table-cell whitespace-nowrap">{created.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-green-400 hidden sm:table-cell whitespace-nowrap">{delivered.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
+                    <td className="py-3 pr-3 sm:pr-4 text-gray-300 hidden lg:table-cell">{durationStr}</td>
+                    <td className="py-3 pr-3 sm:pr-4">
                       <Link href={`/admin/orders/${o.id}`} className="text-kasi-blue hover:opacity-90">View</Link>
                     </td>
                   </tr>
@@ -327,18 +308,19 @@ export default function OrdersPage() {
               })}
               {historyOrders.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="py-6 text-center text-gray-500">No delivered orders yet</td>
+                  <td colSpan={8} className="py-6 text-center text-gray-500">No delivered orders yet</td>
                 </tr>
               )}
             </tbody>
           </table>
+          </div>
         </div>
         {hasMoreHistory && historyOrders.length > 0 && (
           <div className="mt-4 text-center">
             <button
               onClick={loadMoreHistory}
               disabled={historyLoading}
-              className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 sm:px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
             >
               {historyLoading ? 'Loading...' : 'Load More'}
             </button>

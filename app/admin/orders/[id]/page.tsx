@@ -86,7 +86,7 @@ export default function AdminOrderDetail({ params }: { params: { id: string } })
     return () => { channel.unsubscribe() }
   }, [params.id])
 
-  const normalize = (s: string) => (s === 'received' || s === 'cash_approved' || s === 'cash_requested') ? 'assigned' : s
+  const normalize = (s: string) => (s === 'received') ? 'assigned' : s
 
   if (loading) {
     return (
@@ -112,7 +112,7 @@ export default function AdminOrderDetail({ params }: { params: { id: string } })
     )
   }
 
-  const steps = ['pending','assigned','purchased','on_the_way','delivered']
+  const steps = ['pending','assigned','picked_up','on_the_way','delivered']
   const cur = normalize(order.status)
   const idx = steps.indexOf(cur)
   const pct = `${Math.max(0, idx) / (steps.length - 1) * 100}%`

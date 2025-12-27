@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -18,7 +18,8 @@ import {
   Banknote,
   Check,
   FileText,
-  Package
+  Package,
+  User
 } from 'lucide-react'
 
 interface OrderWithDetails extends Order {
@@ -26,7 +27,7 @@ interface OrderWithDetails extends Order {
   items?: OrderItem[]
 }
 
-export default function OrdersPage() {
+function OrdersContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const showSuccess = searchParams.get('success') === 'true'
@@ -35,6 +36,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
+  const [userName, setUserName] = useState<string>('')
 
   useEffect(() => {
     checkAuth()
@@ -47,6 +49,15 @@ export default function OrdersPage() {
     } else {
       setUser(user)
       fetchOrders(user.id)
+      // Fetch user profile for display
+      const { data: profile } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+      if (profile?.full_name) {
+        setUserName(profile.full_name)
+      }
     }
   }
 
@@ -87,8 +98,9 @@ export default function OrdersPage() {
   }
 
   const normalizeStatus = (status: string) => {
+    // Simplify statuses for MVP - no purchase step
     if (status === 'received') return 'assigned'
-    if (status === 'cash_requested' || status === 'cash_approved') return 'assigned'
+    if (status === 'cash_requested' || status === 'cash_approved' || status === 'purchased') return 'assigned'
     return status
   }
 
@@ -97,8 +109,7 @@ export default function OrdersPage() {
     const colors: Record<string, string> = {
       pending: 'bg-yellow-900/30 text-yellow-300 border-yellow-700',
       assigned: 'bg-blue-900/30 text-blue-300 border-blue-700',
-      purchased: 'bg-purple-900/30 text-purple-300 border-purple-700',
-      on_the_way: 'bg-indigo-900/30 text-indigo-300 border-indigo-700',
+      on_the_way: 'bg-purple-900/30 text-purple-300 border-purple-700',
       delivered: 'bg-green-900/30 text-green-300 border-green-700',
       cancelled: 'bg-red-900/30 text-red-300 border-red-700',
     }
@@ -108,9 +119,8 @@ export default function OrdersPage() {
   const getStatusLabel = (status: string) => {
     status = normalizeStatus(status)
     const labels: Record<string, string> = {
-      pending: 'Pending',
-      assigned: 'Received by Agent',
-      purchased: 'Items Purchased',
+      pending: 'Finding Agent',
+      assigned: 'Agent Assigned',
       on_the_way: 'On the Way',
       delivered: 'Delivered',
       cancelled: 'Cancelled',
@@ -126,8 +136,6 @@ export default function OrdersPage() {
         return <Hourglass className={common} />
       case 'assigned':
         return <CheckCircle2 className={common} />
-      case 'purchased':
-        return <ShoppingBag className={common} />
       case 'on_the_way':
         return <Truck className={common} />
       case 'delivered':
@@ -164,31 +172,42 @@ export default function OrdersPage() {
     <div className="min-h-screen bg-kasi-black">
       {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-display font-bold text-white">My Orders</h1>
-              <Link href="/customer/stores" className="text-gray-300 hover:text-kasi-blue font-medium">
-                ← Back to Stores
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center justify-between sm:justify-start gap-3">
+              <h1 className="text-xl sm:text-2xl font-display font-bold text-white">My Orders</h1>
+              <Link href="/customer/stores" className="text-gray-300 hover:text-kasi-blue font-medium text-sm">
+                ← Stores
               </Link>
             </div>
-            <Link
-              href="/customer/cart"
-              className="relative bg-kasi-orange text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition flex items-center gap-2"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              <span>Cart</span>
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/customer/cart"
+                className="relative bg-kasi-orange text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-opacity-90 transition flex items-center gap-1 sm:gap-2"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span className="hidden sm:inline">Cart</span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+              <Link
+                href="/customer/profile"
+                className="flex items-center gap-2 text-gray-300 hover:text-kasi-blue font-medium"
+              >
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4" />
+                </div>
+                <span className="hidden md:inline">{userName || 'Profile'}</span>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {showSuccess && (
           <div className="bg-green-900/30 border border-green-700 text-green-300 px-6 py-4 rounded-lg mb-6 flex items-center gap-3">
             <span className="text-2xl">✓</span>
@@ -222,28 +241,28 @@ export default function OrdersPage() {
             {orders.map((order) => (
               <div key={order.id} className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
                 {/* Order Header */}
-                <div className="bg-gray-800 px-6 py-4 border-b border-gray-700">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="bg-gray-800 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-700">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-2 sm:gap-4">
                     <div>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-400">
                         Order #{order.id.slice(0, 8)} • {new Date(order.created_at).toLocaleDateString()}
                       </p>
-                      <p className="font-semibold text-white mt-1">
+                      <p className="font-semibold text-white mt-1 text-sm sm:text-base">
                         🏪 {order.store?.name || 'Unknown Store'}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1 rounded-full text-sm font-semibold border flex items-center ${getStatusColor(order.status)}`}>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                      <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border flex items-center ${getStatusColor(order.status)}`}>
                         {getStatusIconEl(order.status)} {getStatusLabel(order.status)}
                       </span>
-                      <span className={`text-sm font-semibold flex items-center gap-1 ${getPaymentStatusColor(order.payment_status)}`}>
+                      <span className={`text-xs sm:text-sm font-semibold flex items-center gap-1 ${getPaymentStatusColor(order.payment_status)}`}>
                         {order.payment_status === 'paid' ? (
                           <>
-                            <CreditCard className="w-4 h-4" /> Paid
+                            <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" /> Paid
                           </>
                         ) : (
                           <>
-                            <Banknote className="w-4 h-4" /> Payment Pending
+                            <Banknote className="w-3 h-3 sm:w-4 sm:h-4" /> Pending
                           </>
                         )}
                       </span>
@@ -301,11 +320,10 @@ export default function OrdersPage() {
                     <div className="flex items-center justify-between relative">
                       {(() => {
                         const steps: Array<{ key: string; label: string }> = [
-                          { key: 'pending', label: getStatusLabel('pending') },
-                          { key: 'assigned', label: getStatusLabel('assigned') },
-                          { key: 'purchased', label: getStatusLabel('purchased') },
-                          { key: 'on_the_way', label: getStatusLabel('on_the_way') },
-                          { key: 'delivered', label: getStatusLabel('delivered') },
+                          { key: 'pending', label: 'Finding Agent' },
+                          { key: 'assigned', label: 'Picking Up' },
+                          { key: 'on_the_way', label: 'On the Way' },
+                          { key: 'delivered', label: 'Delivered' },
                         ]
                         const currentKey = normalizeStatus(order.status)
                         const currentIndex = steps.findIndex(s => s.key === currentKey)
@@ -313,26 +331,23 @@ export default function OrdersPage() {
                         return (
                           <>
                             <div className="absolute top-4 left-0 right-0 h-1 bg-gray-700">
-                              <div className="h-full bg-kasi-orange transition-all duration-500" style={{ width: `${progressPct}%` }} />
+                              <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${progressPct}%` }} />
                             </div>
                             {steps.map((s, idx) => {
                               const passed = idx <= currentIndex
                               return (
                                 <div key={s.key} className="relative flex flex-col items-center z-10">
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm border ${passed ? 'bg-kasi-orange text-white border-kasi-orange' : 'bg-gray-700 text-gray-400 border-gray-600'}`}>
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm border ${passed ? 'bg-green-500 text-white border-green-500' : 'bg-gray-700 text-gray-400 border-gray-600'}`}>
                                     {passed && idx !== 0 ? (
                                       <Check className="w-4 h-4" />
                                     ) : (
-                                      // smaller icon in the timeline
                                       (() => {
                                         const iconClass = 'w-4 h-4'
                                         switch (s.key) {
                                           case 'pending':
                                             return <Hourglass className={iconClass} />
                                           case 'assigned':
-                                            return <CheckCircle2 className={iconClass} />
-                                          case 'purchased':
-                                            return <ShoppingBag className={iconClass} />
+                                            return <Package className={iconClass} />
                                           case 'on_the_way':
                                             return <Truck className={iconClass} />
                                           case 'delivered':
@@ -392,5 +407,20 @@ export default function OrdersPage() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-kasi-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kasi-blue mx-auto"></div>
+          <p className="mt-4 text-gray-400">Loading orders...</p>
+        </div>
+      </div>
+    }>
+      <OrdersContent />
+    </Suspense>
   )
 }
