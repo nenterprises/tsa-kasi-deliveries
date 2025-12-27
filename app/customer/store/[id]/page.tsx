@@ -320,7 +320,6 @@ export default function StorePage() {
               </div>
             ))}
           </div>
-          </div>
         )}
           </section>
         </div>
