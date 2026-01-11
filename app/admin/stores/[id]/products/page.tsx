@@ -245,14 +245,14 @@ export default function StoreProductsAdminPage() {
               ))
             )}
           </div>
-          <div className="flex items-center gap-2 mb-8">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-8">
             <input
               placeholder="New category name"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              className="px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded w-64"
+              className="px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded w-full sm:w-64"
             />
-            <button onClick={handleAddCategory} disabled={catAdding} className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50">
+            <button onClick={handleAddCategory} disabled={catAdding} className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50 whitespace-nowrap">
               {catAdding ? 'Adding…' : 'Add Category'}
             </button>
           </div>
