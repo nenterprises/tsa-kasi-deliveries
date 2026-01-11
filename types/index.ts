@@ -1,7 +1,7 @@
 export type UserRole = 'customer' | 'admin' | 'driver' | 'agent'
 export type UserStatus = 'active' | 'inactive' | 'suspended'
 
-export type StoreCategory = 'spaza' | 'tuck_shop' | 'takeaways' | 'alcohol' | 'groceries' | 'restaurant' | 'other'
+export type StoreCategory = 'tuck_shop' | 'takeaways' | 'alcohol' | 'groceries' | 'restaurant' | 'other'
 export type StoreStatus = 'active' | 'pending' | 'inactive'
 export type Township = 'modimolle' | 'phagameng' | 'leseding' | 'bela_bela'
 

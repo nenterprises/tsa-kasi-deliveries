@@ -239,7 +239,6 @@ export default function AddStoreModal({ onClose, onSuccess }: AddStoreModalProps
                   required
                 >
                   <option value="">Select category...</option>
-                  <option value="spaza">Spaza</option>
                   <option value="tuck_shop">Tuck Shop</option>
                   <option value="takeaways">Takeaways</option>
                   <option value="alcohol">Alcohol</option>

@@ -74,7 +74,6 @@ export default function StoresPage() {
 
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
-      spaza: 'Spaza Shop',
       tuck_shop: 'Tuck Shop',
       takeaways: 'Takeaways',
       alcohol: 'Liquor Store',
@@ -88,7 +87,6 @@ export default function StoresPage() {
   const getCategoryIconEl = (category: string) => {
     const common = 'w-5 h-5 text-gray-300'
     switch (category) {
-      case 'spaza':
       case 'tuck_shop':
         return <StoreIcon className={common} />
       case 'takeaways':
@@ -192,7 +190,6 @@ export default function StoresPage() {
               className="w-full sm:w-auto px-4 py-2.5 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-kasi-blue focus:border-transparent text-sm sm:text-base"
             >
               <option value="all">All Categories</option>
-              <option value="spaza">Spaza Shops</option>
               <option value="tuck_shop">Tuck Shops</option>
               <option value="takeaways">Takeaways</option>
               <option value="restaurant">Restaurants</option>
@@ -203,24 +200,6 @@ export default function StoresPage() {
           </div>
         </div>
       </header>
-
-      {/* Custom Request Banner */}
-      <div className="bg-gray-900 border-y border-gray-800 text-white py-3 sm:py-4">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h2 className="font-bold text-base sm:text-lg">Need something specific?</h2>
-              <p className="text-xs sm:text-sm opacity-90 text-gray-300">Submit a custom request like "Buy 2 loaves at Spaza X"</p>
-            </div>
-            <Link
-              href="/customer/custom-request"
-              className="bg-kasi-orange text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition text-center text-sm sm:text-base w-full sm:w-auto"
-            >
-              Custom Request
-            </Link>
-          </div>
-        </div>
-      </div>
 
       {/* Stores Grid */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -266,7 +245,7 @@ export default function StoresPage() {
                   <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
                     <div className="flex items-start text-xs sm:text-sm text-gray-400">
                       <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-                      <span className="line-clamp-1">{store.street_address}, {store.township}</span>
+                      <span className="line-clamp-2">{store.street_address}, {store.township}</span>
                     </div>
                     {store.phone_number && (
                       <div className="flex items-center text-xs sm:text-sm text-gray-400">

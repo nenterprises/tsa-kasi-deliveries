@@ -75,7 +75,6 @@ export default function StoresPage() {
 
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
-      spaza: 'Spaza',
       tuck_shop: 'Tuck Shop',
       takeaways: 'Takeaways',
       alcohol: 'Alcohol',
