@@ -176,15 +176,20 @@ export default function AdminLayout({
       <div className={`transition-all duration-200 ${sidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
         {/* Top Bar */}
         <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
-          <div className="flex items-center justify-between px-6 py-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-gray-400 hover:text-white lg:hidden"
-            >
-              <Menu size={24} />
-            </button>
-            <div className="flex-1 lg:hidden"></div>
-            <div className="text-sm text-gray-400">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+            {/* Mobile: Centered branding */}
+            <div className="flex-1 flex justify-center lg:hidden">
+              <div className="text-center leading-tight">
+                <h1 className="text-lg font-display font-bold">
+                  <span className="text-kasi-blue">TSA</span>{' '}
+                  <span className="text-kasi-orange">KASi</span>
+                </h1>
+                <div className="text-xs text-kasi-orange font-semibold tracking-wide">Deliveries</div>
+              </div>
+            </div>
+
+            {/* Desktop: Date display */}
+            <div className="hidden lg:block text-sm text-gray-400">
               {new Date().toLocaleDateString('en-ZA', { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -192,6 +197,14 @@ export default function AdminLayout({
                 day: 'numeric' 
               })}
             </div>
+
+            {/* Hamburger menu button */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="absolute left-4 lg:hidden text-gray-400 hover:text-white p-2"
+            >
+              <Menu size={20} />
+            </button>
           </div>
         </header>
 

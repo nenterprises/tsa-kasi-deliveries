@@ -383,7 +383,7 @@ export default function AgentsPage() {
 
               {/* Profile Details */}
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-gray-800/50 rounded-lg p-3">
                     <p className="text-xs text-gray-400 uppercase">Email</p>
                     <p className="text-white">{selectedAgent.email}</p>
@@ -405,7 +405,7 @@ export default function AgentsPage() {
                 {/* Stats */}
                 <div className="bg-gray-800/50 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-gray-300 mb-3">Performance Stats</h3>
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-400">{selectedAgent.profile?.orders_completed || 0}</p>
                       <p className="text-xs text-gray-400">Completed</p>

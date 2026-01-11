@@ -168,9 +168,12 @@ export default function StoresPage() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="text-gray-300 hover:text-red-500 font-medium text-sm sm:text-base hidden sm:block"
+                className="p-2 sm:px-4 sm:py-2 text-sm text-red-400 hover:bg-red-900/20 rounded-lg transition-all border border-red-900/30 hover:border-red-800 flex items-center gap-2 flex-shrink-0"
               >
-                Logout
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>

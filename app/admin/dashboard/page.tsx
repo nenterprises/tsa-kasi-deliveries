@@ -197,7 +197,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Secondary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Stores */}
         <Link href="/admin/stores" className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 hover:border-secondary-500/50 transition-all hover:scale-[1.02]">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-secondary-500 to-secondary-600 flex items-center justify-center shadow-lg shadow-secondary-500/20">
