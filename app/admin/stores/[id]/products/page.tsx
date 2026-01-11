@@ -227,16 +227,11 @@ export default function StoreProductsAdminPage() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
-          {!authUserEmail && (
-            <div className="mb-4 p-3 bg-yellow-900/30 border border-yellow-700 text-yellow-300 rounded">
-              Not signed in. Storage uploads require authentication. Please sign in via Admin Login.
-            </div>
-          )}
+          <div className="mb-4 p-3 bg-blue-900/30 border border-blue-700 text-blue-300 rounded">
+            Store menu management is handled through the Store Portal. This is a view-only page for admin reference.
+          </div>
           <h3 className="text-white font-semibold mb-4">Categories</h3>
-          {catError && (
-            <div className="mb-3 p-3 bg-red-900/30 border border-red-700 text-red-300 rounded">{catError}</div>
-          )}
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2">
             {categories.length === 0 ? (
               <div className="text-gray-400 text-sm">No categories yet.</div>
             ) : (
@@ -245,62 +240,10 @@ export default function StoreProductsAdminPage() {
               ))
             )}
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-8">
-            <input
-              placeholder="New category name"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              className="px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded w-full sm:w-64"
-            />
-            <button onClick={handleAddCategory} disabled={catAdding} className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50 whitespace-nowrap">
-              {catAdding ? 'Adding…' : 'Add Category'}
-            </button>
-          </div>
-
-          <h3 className="text-white font-semibold mb-4">Add Product</h3>
-          {addError && (
-            <div className="mb-3 p-3 bg-red-900/30 border border-red-700 text-red-300 rounded">
-              <div>{addError}</div>
-              {addErrorDetail && <div className="text-xs opacity-80 mt-1">{addErrorDetail}</div>}
-            </div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-gray-300 mb-1">Name</label>
-              <input value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-300 mb-1">Price (R)</label>
-              <input type="number" step="0.01" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-300 mb-1">Category</label>
-              <select value={newCategoryId} onChange={(e) => setNewCategoryId(e.target.value)} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded">
-                <option value="">Select category…</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-300 mb-1">Image</label>
-              <input type="file" accept="image/*" onChange={(e) => setNewImage(e.target.files?.[0] || null)} className="w-full text-sm text-gray-300" />
-              <div className="text-xs text-gray-400 mt-1">Uploads go to Supabase bucket: product-images (must be Public).</div>
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm text-gray-300 mb-1">Description</label>
-              <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <button onClick={handleAddProduct} disabled={adding} className="px-6 py-2 bg-kasi-orange text-white rounded-lg hover:bg-opacity-90 transition font-semibold disabled:opacity-50">
-              {adding ? 'Adding…' : 'Add Product'}
-            </button>
-          </div>
         </div>
         {products.length === 0 ? (
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center">
-            <p className="text-gray-400">No products yet. Add items via the Add Store flow or SQL.</p>
+            <p className="text-gray-400">No products yet. Store can add products via Store Portal.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -316,20 +259,8 @@ export default function StoreProductsAdminPage() {
                 {p.description && <div className="text-gray-400 text-sm mt-1 line-clamp-2">{p.description}</div>}
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <div className="text-kasi-orange font-bold">R{Number(p.price).toFixed(2)}</div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => toggleAvailable(p.id, p.available)}
-                      disabled={saving === p.id}
-                      className={`px-3 py-1 rounded text-sm font-semibold border ${p.available ? 'bg-green-600/30 text-green-300 border-green-700' : 'bg-gray-800 text-gray-300 border-gray-700'}`}
-                    >
-                      {saving === p.id ? 'Saving…' : p.available ? 'Available' : 'Hidden'}
-                    </button>
-                    <Link
-                      href={`/admin/stores/${store.id}/products/${p.id}/edit`}
-                      className="px-3 py-1 rounded text-sm font-semibold border bg-gray-800 text-white border-gray-700 hover:bg-gray-700"
-                    >
-                      Edit
-                    </Link>
+                  <div className={`px-3 py-1 rounded text-sm font-semibold border ${p.available ? 'bg-green-600/30 text-green-300 border-green-700' : 'bg-gray-800 text-gray-300 border-gray-700'}`}>
+                    {p.available ? 'Available' : 'Out of Stock'}
                   </div>
                 </div>
               </div>
