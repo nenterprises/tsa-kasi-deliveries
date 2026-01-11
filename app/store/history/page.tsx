@@ -13,7 +13,7 @@ export default function StoreHistory() {
   const [storeSession, setStoreSession] = useState<StoreSession | null>(null)
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('week')
+  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('all')
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const router = useRouter()
 
@@ -36,12 +36,9 @@ export default function StoreHistory() {
       .from('orders')
       .select(`
         *,
-        customers:customer_id(name, phone),
-        order_items(*, products(*)),
-        agents:agent_id(name, phone)
+        order_items(*, products(*))
       `)
       .eq('store_id', storeId)
-      .eq('status', 'completed')
       .order('created_at', { ascending: false })
 
     // Apply date filter
@@ -74,7 +71,7 @@ export default function StoreHistory() {
   const getOrderTotal = (order: any) => {
     if (!order.order_items) return 0
     return order.order_items.reduce((sum: number, item: any) => {
-      return sum + (item.quantity * item.price)
+      return sum + (Number(item.subtotal) || 0)
     }, 0)
   }
 
@@ -108,7 +105,7 @@ export default function StoreHistory() {
       return [
         order.id,
         new Date(order.created_at).toLocaleString(),
-        order.customers?.name || 'N/A',
+        order.customer_id?.slice(0, 8) || 'N/A',
         items,
         `R${getOrderTotal(order).toFixed(2)}`,
         order.payment_status || 'N/A',
@@ -251,7 +248,7 @@ export default function StoreHistory() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-400 mt-1">
-                    {order.customers?.name || 'Customer'} • {order.order_items?.length || 0} items
+                    Customer ID: {order.customer_id?.slice(0, 8) || 'N/A'} • {order.order_items?.length || 0} items
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     {new Date(order.created_at).toLocaleString()}
@@ -314,8 +311,8 @@ export default function StoreHistory() {
               {/* Customer Details */}
               <div className="mb-6 p-4 bg-gray-800/50 backdrop-blur border border-gray-700 rounded-xl">
                 <h3 className="font-bold text-white mb-2">Customer Information</h3>
-                <p className="text-sm text-gray-300">{selectedOrder.customers?.name}</p>
-                <p className="text-sm text-gray-400">{selectedOrder.customers?.phone}</p>
+                <p className="text-sm text-gray-300">Customer</p>
+                <p className="text-sm text-gray-400">ID: {selectedOrder.customer_id?.slice(0, 8)}</p>
               </div>
 
               {/* Order Items */}
@@ -327,10 +324,10 @@ export default function StoreHistory() {
                       <div className="flex-1">
                         <p className="font-medium text-white">{item.products?.name}</p>
                         <p className="text-sm text-gray-400">Quantity: {item.quantity}</p>
-                        <p className="text-xs text-gray-500">R{item.price} each</p>
+                        <p className="text-xs text-gray-500">R{Number(item.unit_price || 0).toFixed(2)} each</p>
                       </div>
                       <p className="font-semibold text-white">
-                        R{(item.quantity * item.price).toFixed(2)}
+                        R{Number(item.subtotal || 0).toFixed(2)}
                       </p>
                     </div>
                   ))}

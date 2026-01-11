@@ -351,7 +351,7 @@ export default function StoreMenu() {
                       : 'bg-gray-800/50 text-gray-400 border border-gray-700'
                   }`}
                 >
-                  {saving === product.id ? '...' : (product.available ? 'Available' : 'Hidden')}
+                  {saving === product.id ? '...' : (product.available ? 'Available' : 'Out of Stock')}
                 </button>
               </div>
 

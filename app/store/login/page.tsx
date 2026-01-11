@@ -50,10 +50,10 @@ export default function StoreLogin() {
     <div className="min-h-screen bg-kasi-black">
       {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="leading-tight">
-              <h1 className="text-2xl font-display font-bold">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-center sm:justify-start">
+            <div className="leading-tight text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl font-display font-bold">
                 <span className="text-kasi-blue">TSA</span>{' '}
                 <span className="text-kasi-orange">KASi</span>
               </h1>
@@ -63,23 +63,23 @@ export default function StoreLogin() {
         </div>
       </header>
 
-      <div className="flex items-center justify-center p-4 py-12">
-        <div className="bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-3xl shadow-2xl p-8 sm:p-10 w-full max-w-md">
-        <div className="text-center mb-8">
+      <div className="flex items-center justify-center p-4 py-8 sm:py-12">
+        <div className="bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-10 w-full max-w-md">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="mb-4 flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-kasi-blue to-kasi-orange flex items-center justify-center shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-kasi-blue to-kasi-orange flex items-center justify-center shadow-lg">
+              <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Store Portal</h2>
-          <p className="text-gray-400">Enter your unique access code to continue</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Store Portal</h2>
+          <p className="text-sm sm:text-base text-gray-400">Enter your unique access code to continue</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
           <div>
-            <label htmlFor="accessCode" className="block text-sm font-medium text-gray-300 mb-3">
+            <label htmlFor="accessCode" className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">
               Access Code
             </label>
             <input

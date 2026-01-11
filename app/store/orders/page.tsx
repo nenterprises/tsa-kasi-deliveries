@@ -57,12 +57,10 @@ export default function StoreOrders() {
       .from('orders')
       .select(`
         *,
-        customers:customer_id(name, phone, address),
-        order_items(*, products(*)),
-        agents:agent_id(name, phone)
+        order_items(*, products(*))
       `)
       .eq('store_id', storeId)
-      .not('status', 'in', '(completed,cancelled)')
+      .in('status', ['pending', 'received', 'purchased', 'on_the_way'])
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -94,7 +92,7 @@ export default function StoreOrders() {
   const getOrderTotal = (order: any) => {
     if (!order.order_items) return 0
     return order.order_items.reduce((sum: number, item: any) => {
-      return sum + (item.quantity * item.price)
+      return sum + (Number(item.subtotal) || 0)
     }, 0)
   }
 
@@ -105,18 +103,20 @@ export default function StoreOrders() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-900/30 text-yellow-300 border-yellow-700'
-      case 'confirmed': return 'bg-blue-900/30 text-blue-300 border-blue-700'
-      case 'preparing': return 'bg-orange-900/30 text-orange-300 border-orange-700'
-      case 'ready_for_pickup': return 'bg-green-900/30 text-green-300 border-green-700'
+      case 'received': return 'bg-blue-900/30 text-blue-300 border-blue-700'
+      case 'purchased': return 'bg-green-900/30 text-green-300 border-green-700'
+      case 'on_the_way': return 'bg-purple-900/30 text-purple-300 border-purple-700'
+      case 'delivered': return 'bg-green-600/30 text-green-200 border-green-600'
+      case 'cancelled': return 'bg-red-900/30 text-red-300 border-red-700'
       default: return 'bg-gray-800 text-gray-300 border-gray-700'
     }
   }
 
   const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'pending': return { status: 'confirmed', label: 'Confirm Order' }
-      case 'confirmed': return { status: 'preparing', label: 'Start Preparing' }
-      case 'preparing': return { status: 'ready_for_pickup', label: 'Mark Ready' }
+      case 'pending': return { status: 'received', label: 'Accept Order' }
+      case 'received': return { status: 'purchased', label: 'Mark as Purchased' }
+      case 'purchased': return { status: 'on_the_way', label: 'Out for Delivery' }
       default: return null
     }
   }
@@ -138,7 +138,7 @@ export default function StoreOrders() {
 
       {/* Filter Tabs */}
       <div className="bg-gray-900/80 backdrop-blur border border-gray-800 rounded-2xl p-3 flex gap-3 overflow-x-auto hide-scrollbar">
-        {['all', 'pending', 'confirmed', 'preparing', 'ready_for_pickup'].map((status) => (
+        {['all', 'pending', 'received', 'purchased', 'on_the_way'].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status as any)}
@@ -148,7 +148,12 @@ export default function StoreOrders() {
                 : 'bg-gray-800/50 backdrop-blur text-gray-400 hover:bg-gray-700'
             }`}
           >
-            {status === 'all' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            {status === 'all' ? 'All' : 
+             status === 'pending' ? 'New' :
+             status === 'received' ? 'Accepted' :
+             status === 'purchased' ? 'Purchased' :
+             status === 'on_the_way' ? 'In Transit' :
+             status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             <span className="ml-2 text-xs">
               ({status === 'all' ? orders.length : orders.filter(o => o.status === status).length})
             </span>
@@ -176,16 +181,20 @@ export default function StoreOrders() {
                   </p>
                 </div>
                 <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(order.status)}`}>
-                  {order.status.replace('_', ' ').toUpperCase()}
+                  {order.status === 'pending' ? 'NEW' : 
+                   order.status === 'received' ? 'ACCEPTED' : 
+                   order.status === 'purchased' ? 'PURCHASED' : 
+                   order.status === 'on_the_way' ? 'IN TRANSIT' : 
+                   order.status.replace('_', ' ').toUpperCase()}
                 </span>
               </div>
 
               {/* Customer Info */}
               <div className="mb-4 pb-4 border-b border-gray-800">
                 <p className="text-sm font-medium text-white">
-                  {order.customers?.name || 'Customer'}
+                  Customer
                 </p>
-                <p className="text-sm text-gray-400">{order.customers?.phone}</p>
+                <p className="text-sm text-gray-400">ID: {order.customer_id?.slice(0, 8)}</p>
                 {order.customers?.address && (
                   <p className="text-xs text-gray-500 mt-1">{order.customers.address}</p>
                 )}
@@ -199,7 +208,7 @@ export default function StoreOrders() {
                       {item.quantity}x {item.products?.name || 'Item'}
                     </span>
                     <span className="font-medium text-white">
-                      R{(item.quantity * item.price).toFixed(2)}
+                      R{Number(item.subtotal || 0).toFixed(2)}
                     </span>
                   </div>
                 ))}
@@ -283,8 +292,8 @@ export default function StoreOrders() {
               {/* Customer Details */}
               <div className="mb-6 p-4 bg-gray-800/50 backdrop-blur border border-gray-700 rounded-xl">
                 <h3 className="font-bold text-white mb-2">Customer Information</h3>
-                <p className="text-sm text-gray-300">{selectedOrder.customers?.name}</p>
-                <p className="text-sm text-gray-400">{selectedOrder.customers?.phone}</p>
+                <p className="text-sm text-gray-300">Customer</p>
+                <p className="text-xs text-gray-400">ID: {selectedOrder.customer_id?.slice(0, 8)}</p>
                 {selectedOrder.customers?.address && (
                   <p className="text-sm text-gray-400 mt-1">{selectedOrder.customers.address}</p>
                 )}
@@ -299,10 +308,10 @@ export default function StoreOrders() {
                       <div className="flex-1">
                         <p className="font-medium text-white">{item.products?.name}</p>
                         <p className="text-sm text-gray-400">Quantity: {item.quantity}</p>
-                        <p className="text-xs text-gray-500">R{item.price} each</p>
+                        <p className="text-xs text-gray-500">R{Number(item.unit_price || 0).toFixed(2)} each</p>
                       </div>
                       <p className="font-semibold text-white">
-                        R{(item.quantity * item.price).toFixed(2)}
+                        R{Number(item.subtotal || 0).toFixed(2)}
                       </p>
                     </div>
                   ))}
