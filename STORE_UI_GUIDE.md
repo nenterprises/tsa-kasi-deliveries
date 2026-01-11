@@ -1,0 +1,278 @@
+# Store UI Documentation
+
+## Overview
+The Store UI provides a dedicated portal for store managers to manage their store operations independently. Store managers log in using a unique access code instead of traditional email/password authentication.
+
+## Access Control
+
+### Access Code Authentication
+- Each store has a unique 8-character alphanumeric access code
+- Access codes are automatically generated when a store is created
+- Store managers use this code to log in at `/store/login`
+- No signup process required - admin creates stores and provides access codes
+
+### Getting Access Codes
+1. **For Admins**: View access codes in the Admin Stores page with a copy-to-clipboard button
+2. **For Store Managers**: Receive the access code from the platform administrator
+3. Access codes are also visible in the Store Settings page after login
+
+## Features
+
+### 1. Dashboard (`/store/dashboard`)
+**Quick Overview of Operations**
+- New orders count (pending/confirmed)
+- In-progress orders (preparing/ready for pickup)
+- Completed orders today
+- Total sales for the day
+- Real-time order notifications
+- Recent orders list with quick view
+
+**Key Metrics:**
+- Visual cards showing order counts by status
+- Sales totals with currency formatting
+- Alert banner for pending orders requiring action
+
+### 2. Orders Management (`/store/orders`)
+**Complete Order Workflow**
+
+**Order List Features:**
+- Filter by status (all, pending, confirmed, preparing, ready_for_pickup)
+- Real-time updates via Supabase subscriptions
+- Grid view with order cards showing:
+  - Order ID and timestamp
+  - Customer information (name, phone, address)
+  - Order items with quantities and prices
+  - Total amount
+  - Payment status
+  - Special instructions/notes
+
+**Order Actions:**
+- **Pending → Confirmed**: Accept the order
+- **Confirmed → Preparing**: Start preparing the order
+- **Preparing → Ready for Pickup**: Mark order ready for agent collection
+
+**Order Detail Modal:**
+- Full customer details
+- Complete item list with individual prices
+- Special instructions highlighted
+- Assigned agent information (if available)
+- One-click status updates
+
+### 3. Menu Management (`/store/menu`)
+**Product CRUD Interface**
+
+**Features:**
+- Add new products with:
+  - Name (required)
+  - Description
+  - Price (required)
+  - Category (custom text)
+  - Stock status (in stock/out of stock)
+- Edit existing products
+- Delete products (with confirmation)
+- Toggle stock availability quickly
+- Filter products by category
+- Category-based organization
+
+**Product Display:**
+- Grid layout for easy browsing
+- Quick edit/delete actions
+- Stock status toggle button
+- Price display with currency formatting
+
+### 4. Order History (`/store/history`)
+**Sales Analytics and Records**
+
+**Time Filters:**
+- Today
+- Last 7 days
+- Last 30 days
+- All time
+
+**Analytics:**
+- Total sales amount
+- Total number of orders
+- Average order value
+
+**Features:**
+- Complete order details with customer info
+- Export to CSV for bookkeeping
+- Searchable order list
+- Payment status tracking
+- Delivery agent information
+
+**CSV Export Includes:**
+- Order ID
+- Date and time
+- Customer name
+- Items ordered
+- Total amount
+- Payment status
+- Agent name
+
+### 5. Settings (`/store/settings`)
+**Store Profile Management**
+
+**Editable Information:**
+- Store name
+- Description
+- Address
+- Phone number
+- Email address
+
+**Additional Features:**
+- Access code display with copy button
+- Store ID and creation date
+- Help section with common troubleshooting tips
+- One-click save changes
+
+## Database Schema
+
+### Migration File: `store_access_codes.sql`
+
+**New Column:**
+```sql
+ALTER TABLE stores ADD COLUMN access_code TEXT UNIQUE NOT NULL;
+```
+
+**Auto-Generation:**
+- Function `generate_store_access_code()` creates unique 8-character codes
+- Trigger automatically generates codes for new stores
+- Existing stores get codes via UPDATE query
+
+**Index:**
+- Indexed on `access_code` for fast lookups during authentication
+
+## Technical Implementation
+
+### Authentication Flow
+1. Store manager enters access code at `/store/login`
+2. System queries `stores` table for matching `access_code`
+3. If found, creates localStorage session with:
+   - Store ID
+   - Store name
+   - Access code
+   - Login timestamp
+4. Redirects to `/store/dashboard`
+
+### Session Management
+- Session stored in browser's localStorage
+- Layout component checks session on every page
+- Automatic redirect to login if no valid session
+- Logout clears session and redirects to login
+
+### Real-Time Updates
+- Supabase real-time subscriptions on orders table
+- Filtered by store_id
+- Auto-refresh when orders change
+- No manual refresh needed
+
+### Security Considerations
+- Access codes are unique and indexed
+- No password storage required
+- Session is client-side (suitable for trusted store managers)
+- Access codes should be kept secure
+- Can be regenerated by admin if compromised
+
+## Routes
+
+### Store Routes
+- `/store/login` - Access code authentication
+- `/store/dashboard` - Main dashboard
+- `/store/orders` - Active orders management
+- `/store/menu` - Product/menu management
+- `/store/history` - Order history and analytics
+- `/store/settings` - Store profile settings
+
+### Admin Integration
+- Admin can view all store access codes at `/admin/stores`
+- Copy-to-clipboard functionality for easy sharing
+- Access codes displayed in secure card format
+
+## User Experience
+
+### Navigation
+- Persistent header with store name
+- Tab-based navigation with icons
+- Active route highlighting
+- Logout button in header
+
+### Responsive Design
+- Mobile-friendly layouts
+- Grid layouts adapt to screen size
+- Touch-friendly buttons and controls
+- Optimized for tablet use in store environments
+
+### Visual Feedback
+- Loading states for async operations
+- Success messages for actions
+- Error handling with user-friendly messages
+- Copy confirmation animations
+- Status badges with color coding
+
+## Setup Instructions
+
+### 1. Run Database Migration
+```bash
+# Execute the SQL migration in Supabase
+# File: supabase/store_access_codes.sql
+```
+
+This will:
+- Add access_code column
+- Generate codes for existing stores
+- Set up auto-generation for new stores
+
+### 2. Share Access Codes
+1. Navigate to Admin → Stores
+2. Find the store access code in the blue card
+3. Click the copy button
+4. Share with store manager via secure channel
+
+### 3. Store Manager Login
+1. Go to `/store/login`
+2. Enter the 8-character access code (case-insensitive)
+3. Click Login
+4. Access the store dashboard
+
+## Future Enhancements
+
+### Potential Features
+- Push notifications for new orders
+- Low stock alerts and inventory management
+- Multi-user access per store
+- Business hours management
+- Holiday closure settings
+- Advanced analytics and reporting
+- Receipt printing functionality
+- Product image uploads
+- Bulk product import/export
+
+### Security Improvements
+- Rate limiting on login attempts
+- Access code expiration
+- Multi-factor authentication
+- Activity logging
+- IP whitelisting for stores
+
+## Support
+
+### Common Issues
+
+**Can't login with access code**
+- Ensure code is entered correctly (case-insensitive)
+- Check with admin that code hasn't changed
+- Try refreshing the page
+
+**Orders not appearing**
+- Refresh the page
+- Check internet connection
+- Verify store has active orders
+
+**Can't update products**
+- Check internet connection
+- Ensure all required fields are filled
+- Contact admin if issue persists
+
+### Contact
+For technical support or access code issues, contact the platform administrator.

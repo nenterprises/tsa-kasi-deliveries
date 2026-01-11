@@ -40,6 +40,7 @@ export interface Store {
   logo_url?: string
   status: StoreStatus
   custom_orders_only: boolean
+  access_code?: string
   created_at: string
   updated_at: string
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Store as StoreType } from '@/types'
-import { Plus, Search, MapPin, Phone, Clock, Package, ShoppingCart } from 'lucide-react'
+import { Plus, Search, MapPin, Phone, Clock, Package, ShoppingCart, Copy, Check } from 'lucide-react'
 import AddStoreModal from './AddStoreModal'
 import Link from 'next/link'
 
@@ -14,6 +14,7 @@ export default function StoresPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [productCounts, setProductCounts] = useState<Record<string, number>>({})
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
   
 
   useEffect(() => {
@@ -52,7 +53,11 @@ export default function StoresPage() {
     }
   }
 
-  
+  const copyAccessCode = (code: string) => {
+    navigator.clipboard.writeText(code)
+    setCopiedCode(code)
+    setTimeout(() => setCopiedCode(null), 2000)
+  }
 
   const filteredStores = stores.filter(store =>
     store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -208,6 +213,30 @@ export default function StoresPage() {
                   <div className="mt-4 p-3 bg-orange-900/30 border border-orange-700 rounded-lg">
                     <p className="text-xs text-orange-300 font-semibold flex items-center gap-1"><ShoppingCart size={14} /> Custom Orders Only</p>
                     <p className="text-xs text-orange-300/90 mt-1">Driver purchases items manually</p>
+                  </div>
+                )}
+
+                {/* Store Access Code */}
+                {store.access_code && (
+                  <div className="mt-4 p-3 bg-blue-900/30 border border-blue-700 rounded-lg">
+                    <p className="text-xs text-blue-300 font-semibold mb-2">Store Access Code</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 px-3 py-1.5 bg-gray-800 text-blue-200 font-mono text-sm rounded border border-gray-700">
+                        {store.access_code}
+                      </code>
+                      <button
+                        onClick={() => copyAccessCode(store.access_code!)}
+                        className="p-2 bg-gray-800 hover:bg-gray-700 text-blue-300 rounded border border-gray-700 transition"
+                        title="Copy access code"
+                      >
+                        {copiedCode === store.access_code ? (
+                          <Check size={16} className="text-green-400" />
+                        ) : (
+                          <Copy size={16} />
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-xs text-blue-300/70 mt-2">Share this code with store managers to access their portal</p>
                   </div>
                 )}
 
