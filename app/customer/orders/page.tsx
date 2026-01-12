@@ -1,11 +1,12 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Order, OrderItem, Store } from '@/types'
 import { useCart } from '@/lib/CartContext'
+import { useToast, ToastContainer } from '@/lib/useRealtime'
 import {
   ShoppingCart,
   Hourglass,
@@ -32,36 +33,14 @@ function OrdersContent() {
   const searchParams = useSearchParams()
   const showSuccess = searchParams.get('success') === 'true'
   const { totalItems } = useCart()
+  const { toasts, showToast } = useToast()
   
   const [orders, setOrders] = useState<OrderWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [userName, setUserName] = useState<string>('')
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/customer/login')
-    } else {
-      setUser(user)
-      fetchOrders(user.id)
-      // Fetch user profile for display
-      const { data: profile } = await supabase
-        .from('users')
-        .select('full_name')
-        .eq('id', user.id)
-        .single()
-      if (profile?.full_name) {
-        setUserName(profile.full_name)
-      }
-    }
-  }
-
-  const fetchOrders = async (userId: string) => {
+  const fetchOrders = useCallback(async (userId: string) => {
     try {
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
@@ -94,6 +73,86 @@ function OrdersContent() {
       console.error('Error fetching orders:', error)
     } finally {
       setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  // Real-time subscription for order updates
+  useEffect(() => {
+    if (!user?.id) return
+
+    const channel = supabase
+      .channel('customer-orders-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `customer_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Order update received:', payload)
+          
+          if (payload.eventType === 'UPDATE') {
+            const updatedOrder = payload.new as Order
+            
+            // Show toast notification for status changes
+            if (payload.old.status !== updatedOrder.status) {
+              const statusMessages: Record<string, string> = {
+                'assigned': '🎯 Agent assigned to your order!',
+                'purchased': '🛍️ Items purchased!',
+                'on_the_way': '🚚 Your order is on the way!',
+                'delivered': '✅ Order delivered!'
+              }
+              
+              if (statusMessages[updatedOrder.status]) {
+                showToast({
+                  message: statusMessages[updatedOrder.status],
+                  type: 'success'
+                })
+              }
+            }
+            
+            // Show toast for payment status changes
+            if (payload.old.payment_status !== updatedOrder.payment_status && updatedOrder.payment_status === 'paid') {
+              showToast({
+                message: '💳 Payment confirmed!',
+                type: 'success'
+              })
+            }
+          }
+          
+          // Refresh orders list
+          fetchOrders(user.id)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      channel.unsubscribe()
+    }
+  }, [user?.id, fetchOrders, showToast])
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/customer/login')
+    } else {
+      setUser(user)
+      fetchOrders(user.id)
+      // Fetch user profile for display
+      const { data: profile } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+      if (profile?.full_name) {
+        setUserName(profile.full_name)
+      }
     }
   }
 
@@ -406,6 +465,9 @@ function OrdersContent() {
           </div>
         )}
       </main>
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} />
     </div>
   )
 }

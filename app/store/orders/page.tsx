@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/lib/useRealtime'
 
 interface StoreSession {
   storeId: string
@@ -16,6 +17,7 @@ export default function StoreOrders() {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const router = useRouter()
+  const { showToast, ToastContainer } = useToast()
 
   useEffect(() => {
     const sessionData = localStorage.getItem('store_session')
@@ -39,7 +41,15 @@ export default function StoreOrders() {
           table: 'orders',
           filter: `store_id=eq.${session.storeId}`
         },
-        () => {
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            showToast('🛒 New order received!', 'success')
+          } else if (payload.eventType === 'UPDATE') {
+            const newOrder = payload.new as any
+            if (newOrder.payment_status === 'paid') {
+              showToast('✅ Payment received!', 'success')
+            }
+          }
           loadOrders(session.storeId)
         }
       )
@@ -48,7 +58,7 @@ export default function StoreOrders() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [router])
+  }, [router, showToast])
 
   const loadOrders = async (storeId: string) => {
     setLoading(true)
@@ -134,11 +144,13 @@ export default function StoreOrders() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">Orders</h1>
-        <p className="text-gray-400">Manage your incoming and active orders</p>
-      </div>
+    <>
+      <ToastContainer />
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Orders</h1>
+          <p className="text-gray-400">Manage your incoming and active orders</p>
+        </div>
 
       {/* Filter Tabs */}
       <div className="bg-gray-900/80 backdrop-blur border border-gray-800 rounded-2xl p-3 flex gap-3 overflow-x-auto hide-scrollbar">
@@ -376,6 +388,7 @@ export default function StoreOrders() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

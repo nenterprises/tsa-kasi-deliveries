@@ -11,10 +11,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if Yoco secret key is configured
+    const secretKey = process.env.YOCO_SECRET_KEY
+    console.log('YOCO_SECRET_KEY exists:', !!secretKey)
+    console.log('YOCO_SECRET_KEY starts with sk_test:', secretKey?.startsWith('sk_test_'))
+    
+    if (!secretKey) {
+      console.error('YOCO_SECRET_KEY is not configured')
+      return NextResponse.json(
+        { error: 'Payment service not configured. Please check environment variables.' },
+        { status: 500 }
+      )
+    }
+
+    console.log('Creating Yoco payment for amount:', amount)
+
     const response = await fetch('https://payments.yoco.com/api/checkouts', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.YOCO_SECRET_KEY}`,
+        'Authorization': `Bearer ${secretKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -28,9 +43,13 @@ export async function POST(request: NextRequest) {
     })
 
     const data = await response.json()
+    
+    console.log('Yoco response status:', response.status)
+    console.log('Yoco response:', JSON.stringify(data, null, 2))
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to create payment')
+      console.error('Yoco error:', data)
+      throw new Error(data.message || JSON.stringify(data) || 'Failed to create payment')
     }
 
     return NextResponse.json({

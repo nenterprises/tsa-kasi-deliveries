@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { OrderWithDetails } from '@/types'
 import { Inbox, MapPin, Store, Navigation, Banknote, X, Check } from 'lucide-react'
+import { useToast } from '@/lib/useRealtime'
 
 interface AvailableJobsProps {
   agentId: string
@@ -16,6 +17,7 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
   const [loading, setLoading] = useState(true)
   const [accepting, setAccepting] = useState<string | null>(null)
   const [declining, setDeclining] = useState<string | null>(null)
+  const { showToast, ToastContainer } = useToast()
 
   useEffect(() => {
     loadAvailableJobs()
@@ -25,14 +27,19 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
       .channel('available-jobs')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'orders' },
-        () => loadAvailableJobs()
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            showToast('🆕 New delivery job available!', 'success')
+          }
+          loadAvailableJobs()
+        }
       )
       .subscribe()
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [showToast])
 
   const loadAvailableJobs = async () => {
     try {
@@ -100,48 +107,59 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
 
   if (!isOnline) {
     return (
-      <div className="text-center py-12">
-        <div className="mb-4 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
-            <Inbox className="w-8 h-8 text-gray-500" />
+      <>
+        <ToastContainer />
+        <div className="text-center py-12">
+          <div className="mb-4 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
+              <Inbox className="w-8 h-8 text-gray-500" />
+            </div>
           </div>
+          <h3 className="text-xl font-semibold text-gray-100 mb-2">You&apos;re Offline</h3>
+          <p className="text-gray-400">Go online to see available jobs</p>
         </div>
-        <h3 className="text-xl font-semibold text-gray-100 mb-2">You&apos;re Offline</h3>
-        <p className="text-gray-400">Go online to see available jobs</p>
-      </div>
+      </>
     )
   }
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary-500 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading available jobs...</p>
+      <>
+        <ToastContainer />
+        <div className="flex justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary-500 mx-auto"></div>
+            <p className="mt-4 text-gray-400">Loading available jobs...</p>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   if (jobs.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="mb-4 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
-            <Inbox className="w-8 h-8 text-gray-500" />
+      <>
+        <ToastContainer />
+        <div className="text-center py-12">
+          <div className="mb-4 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
+              <Inbox className="w-8 h-8 text-gray-500" />
+            </div>
           </div>
+          <h3 className="text-xl font-semibold text-gray-100 mb-2">No Available Jobs</h3>
+          <p className="text-gray-400">Check back soon for new delivery opportunities</p>
         </div>
-        <h3 className="text-xl font-semibold text-gray-100 mb-2">No Available Jobs</h3>
-        <p className="text-gray-400">Check back soon for new delivery opportunities</p>
-      </div>
+      </>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-100 mb-4">
-        Available Jobs ({jobs.length})
-      </h2>
+    <>
+      <ToastContainer />
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-100 mb-4">
+          Available Jobs ({jobs.length})
+        </h2>
 
       <div className="space-y-4">
         {jobs.map((job) => (
@@ -249,6 +267,7 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
           </div>
         ))}
       </div>
-    </div>
+      </div>
+    </>
   )
 }
