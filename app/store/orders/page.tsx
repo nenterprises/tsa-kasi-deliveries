@@ -43,11 +43,11 @@ export default function StoreOrders() {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            showToast('🛒 New order received!', 'success')
+            showToast({ message: '🛒 New order received!', type: 'success' })
           } else if (payload.eventType === 'UPDATE') {
             const newOrder = payload.new as any
             if (newOrder.payment_status === 'paid') {
-              showToast('✅ Payment received!', 'success')
+              showToast({ message: '✅ Payment received!', type: 'success' })
             }
           }
           loadOrders(session.storeId)

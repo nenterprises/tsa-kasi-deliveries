@@ -29,7 +29,7 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
         { event: '*', schema: 'public', table: 'orders' },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            showToast('🆕 New delivery job available!', 'success')
+            showToast({ message: '🆕 New delivery job available!', type: 'success' })
           }
           loadAvailableJobs()
         }
