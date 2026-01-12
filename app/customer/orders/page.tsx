@@ -84,6 +84,8 @@ function OrdersContent() {
   useEffect(() => {
     if (!user?.id) return
 
+    console.log('🔴 Setting up realtime subscription for customer:', user.id)
+
     const channel = supabase
       .channel('customer-orders-realtime')
       .on(
@@ -95,13 +97,14 @@ function OrdersContent() {
           filter: `customer_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Order update received:', payload)
+          console.log('🔴 Order update received:', payload)
           
           if (payload.eventType === 'UPDATE') {
             const updatedOrder = payload.new as Order
             
             // Show toast notification for status changes
             if (payload.old.status !== updatedOrder.status) {
+              console.log('🔴 Status changed from', payload.old.status, 'to', updatedOrder.status)
               const statusMessages: Record<string, string> = {
                 'assigned': '🎯 Agent assigned to your order!',
                 'purchased': '🛍️ Items purchased!',
@@ -119,6 +122,7 @@ function OrdersContent() {
             
             // Show toast for payment status changes
             if (payload.old.payment_status !== updatedOrder.payment_status && updatedOrder.payment_status === 'paid') {
+              console.log('🔴 Payment status changed to paid')
               showToast({
                 message: '💳 Payment confirmed!',
                 type: 'success'
@@ -127,12 +131,16 @@ function OrdersContent() {
           }
           
           // Refresh orders list
+          console.log('🔴 Fetching updated orders...')
           fetchOrders(user.id)
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('🔴 Subscription status:', status)
+      })
 
     return () => {
+      console.log('🔴 Unsubscribing from realtime')
       channel.unsubscribe()
     }
   }, [user?.id, fetchOrders, showToast])
