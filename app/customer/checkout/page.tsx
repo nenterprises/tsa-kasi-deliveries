@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { useCart } from '@/lib/CartContext'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, MapPin, CreditCard, ShoppingBag, Truck, CheckCircle, PartyPopper } from 'lucide-react'
+import AddressAutocomplete from './AddressAutocomplete'
+import { Address, calculateDistance, calculateDeliveryFee } from '@/lib/mapbox'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -14,6 +16,8 @@ export default function CheckoutPage() {
   const [error, setError] = useState('')
   const [user, setUser] = useState<any>(null)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null)
+  const [calculatedDeliveryFee, setCalculatedDeliveryFee] = useState(15) // Default R15
   const [formData, setFormData] = useState({
     deliveryAddress: '',
     deliveryTownship: 'modimolle',
@@ -37,8 +41,44 @@ export default function CheckoutPage() {
     }
   }
 
-  const deliveryFee = 15
+  const deliveryFee = calculatedDeliveryFee
   const totalAmount = totalPrice + deliveryFee
+
+  // Handle address selection from autocomplete
+  const handleAddressSelect = async (address: Address) => {
+    setSelectedAddress(address)
+    setFormData({
+      ...formData,
+      deliveryAddress: address.formatted
+    })
+
+    // Calculate delivery fee based on distance from store
+    // For simplicity, we'll use the first store in the cart
+    if (items.length > 0) {
+      try {
+        const storeId = items[0].store_id
+        const { data: store } = await supabase
+          .from('stores')
+          .select('gps_latitude, gps_longitude')
+          .eq('id', storeId)
+          .single()
+
+        if (store && store.gps_latitude && store.gps_longitude) {
+          const distance = calculateDistance(
+            store.gps_latitude,
+            store.gps_longitude,
+            address.latitude,
+            address.longitude
+          )
+          const fee = calculateDeliveryFee(distance)
+          setCalculatedDeliveryFee(fee)
+        }
+      } catch (error) {
+        console.error('Error calculating delivery fee:', error)
+        // Keep default fee on error
+      }
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,6 +118,15 @@ export default function CheckoutPage() {
             delivery_fee: deliveryFee,
             delivery_address: formData.deliveryAddress,
             delivery_township: formData.deliveryTownship,
+            delivery_address_formatted: selectedAddress?.formatted || formData.deliveryAddress,
+            delivery_gps_lat: selectedAddress?.latitude || null,
+            delivery_gps_lng: selectedAddress?.longitude || null,
+            delivery_street: selectedAddress?.street || null,
+            delivery_street_number: selectedAddress?.streetNumber || null,
+            delivery_locality: selectedAddress?.locality || null,
+            delivery_region: selectedAddress?.region || null,
+            delivery_postal_code: selectedAddress?.postalCode || null,
+            delivery_special_instructions: formData.notes || null,
             status: 'pending',
             payment_status: 'pending',
             payment_method: 'yoco',
@@ -256,15 +305,22 @@ export default function CheckoutPage() {
                     <label htmlFor="deliveryAddress" className="block text-sm font-medium text-gray-300 mb-2">
                       Delivery Address <span className="text-red-400">*</span>
                     </label>
-                    <input
-                      id="deliveryAddress"
-                      type="text"
-                      value={formData.deliveryAddress}
-                      onChange={(e) => setFormData({ ...formData, deliveryAddress: e.target.value })}
-                      required
-                      placeholder="e.g., 123 Main Street, Section B"
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-secondary-500"
+                    <AddressAutocomplete
+                      onAddressSelect={handleAddressSelect}
+                      initialValue={formData.deliveryAddress}
+                      placeholder="Start typing your address..."
                     />
+                    {selectedAddress && (
+                      <div className="mt-2 p-3 bg-green-900/20 border border-green-700/50 rounded-lg">
+                        <p className="text-green-400 text-xs font-medium mb-1">✓ Address confirmed</p>
+                        <p className="text-gray-300 text-sm">{selectedAddress.formatted}</p>
+                        {selectedAddress.latitude && selectedAddress.longitude && (
+                          <p className="text-gray-400 text-xs mt-1">
+                            📍 GPS: {selectedAddress.latitude.toFixed(6)}, {selectedAddress.longitude.toFixed(6)}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div>
