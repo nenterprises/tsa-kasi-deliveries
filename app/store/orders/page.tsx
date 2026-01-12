@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { useToast } from '@/lib/useRealtime'
+import { useToast, ToastContainer } from '@/lib/useRealtime'
 
 interface StoreSession {
   storeId: string
@@ -17,7 +17,7 @@ export default function StoreOrders() {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const router = useRouter()
-  const { showToast, ToastContainer } = useToast()
+  const { toasts, showToast } = useToast()
 
   useEffect(() => {
     const sessionData = localStorage.getItem('store_session')
@@ -145,7 +145,7 @@ export default function StoreOrders() {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer toasts={toasts} />
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white">Orders</h1>

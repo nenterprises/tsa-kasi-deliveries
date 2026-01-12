@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { OrderWithDetails } from '@/types'
 import { Inbox, MapPin, Store, Navigation, Banknote, X, Check } from 'lucide-react'
-import { useToast } from '@/lib/useRealtime'
+import { useToast, ToastContainer } from '@/lib/useRealtime'
 
 interface AvailableJobsProps {
   agentId: string
@@ -17,7 +17,7 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
   const [loading, setLoading] = useState(true)
   const [accepting, setAccepting] = useState<string | null>(null)
   const [declining, setDeclining] = useState<string | null>(null)
-  const { showToast, ToastContainer } = useToast()
+  const { toasts, showToast } = useToast()
 
   useEffect(() => {
     loadAvailableJobs()
@@ -108,7 +108,7 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
   if (!isOnline) {
     return (
       <>
-        <ToastContainer />
+        <ToastContainer toasts={toasts} />
         <div className="text-center py-12">
           <div className="mb-4 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
@@ -125,7 +125,7 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
   if (loading) {
     return (
       <>
-        <ToastContainer />
+        <ToastContainer toasts={toasts} />
         <div className="flex justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary-500 mx-auto"></div>
@@ -139,7 +139,7 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
   if (jobs.length === 0) {
     return (
       <>
-        <ToastContainer />
+        <ToastContainer toasts={toasts} />
         <div className="text-center py-12">
           <div className="mb-4 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
@@ -155,7 +155,7 @@ export default function AvailableJobs({ agentId, isOnline, onJobAccepted }: Avai
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer toasts={toasts} />
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-gray-100 mb-4">
           Available Jobs ({jobs.length})

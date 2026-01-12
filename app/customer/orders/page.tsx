@@ -229,6 +229,7 @@ function OrdersContent() {
 
   return (
     <div className="min-h-screen bg-kasi-black">
+      <ToastContainer toasts={toasts} />
       {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
