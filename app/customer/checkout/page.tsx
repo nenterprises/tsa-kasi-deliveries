@@ -61,6 +61,8 @@ export default function CheckoutPage() {
         return acc
       }, {} as Record<string, typeof items>)
 
+      const orderIds: string[] = []
+
       // Create an order for each store
       for (const [storeId, storeItems] of Object.entries(itemsByStore)) {
         const storeTotal = storeItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -86,6 +88,8 @@ export default function CheckoutPage() {
 
         if (orderError) throw orderError
 
+        orderIds.push(orderData.id)
+
         // Create order items
         const orderItems = storeItems.map(item => ({
           order_id: orderData.id,
@@ -103,16 +107,37 @@ export default function CheckoutPage() {
         if (itemsError) throw itemsError
       }
 
-      // Show success modal FIRST (before clearing cart)
-      setShowSuccess(true)
-      
-      // Small delay to ensure state is set before clearing cart
-      setTimeout(() => {
+      // Initiate Yoco payment
+      const paymentResponse = await fetch('/api/yoco/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: totalAmount,
+          currency: 'ZAR',
+          metadata: {
+            orderIds,
+            customerId: user.id,
+            customerEmail: user.email,
+          },
+        }),
+      })
+
+      const paymentData = await paymentResponse.json()
+
+      if (!paymentResponse.ok) {
+        throw new Error(paymentData.error || 'Failed to create payment')
+      }
+
+      // Redirect to Yoco payment page
+      if (paymentData.redirectUrl) {
+        // Clear cart before redirecting
         clearCart()
-      }, 100)
+        window.location.href = paymentData.redirectUrl
+      } else {
+        throw new Error('No payment redirect URL received')
+      }
     } catch (err: any) {
       setError(err.message)
-    } finally {
       setLoading(false)
     }
   }

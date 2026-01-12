@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import StoreProfileWizard from '../components/StoreProfileWizard'
 
 interface Order {
   id: string
@@ -24,6 +25,8 @@ export default function StoreDashboard() {
   const [inProgressOrders, setInProgressOrders] = useState<Order[]>([])
   const [completedToday, setCompletedToday] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [showWizard, setShowWizard] = useState(false)
+  const [storeData, setStoreData] = useState<any>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -35,6 +38,7 @@ export default function StoreDashboard() {
 
     const session = JSON.parse(sessionData)
     setStoreSession(session)
+    loadStoreInfo(session.storeId)
     loadDashboardData(session.storeId)
 
     // Set up real-time subscription for orders
@@ -58,7 +62,21 @@ export default function StoreDashboard() {
       subscription.unsubscribe()
     }
   }, [router])
+  const loadStoreInfo = async (storeId: string) => {
+    const { data, error } = await supabase
+      .from('stores')
+      .select('*')
+      .eq('id', storeId)
+      .single()
 
+    if (data) {
+      setStoreData(data)
+      // Check if profile is incomplete (missing banking details or description)
+      const isIncomplete = !data.description || !data.phone_number || 
+                          !data.bank_name || !data.account_number
+      setShowWizard(isIncomplete)
+    }
+  }
   const loadDashboardData = async (storeId: string) => {
     setLoading(true)
 
@@ -261,6 +279,19 @@ export default function StoreDashboard() {
           )}
         </div>
       </div>
+
+      {/* Profile Wizard Modal */}
+      {showWizard && storeSession && (
+        <StoreProfileWizard
+          storeId={storeSession.storeId}
+          onComplete={() => {
+            setShowWizard(false)
+            if (storeSession) {
+              loadStoreInfo(storeSession.storeId)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

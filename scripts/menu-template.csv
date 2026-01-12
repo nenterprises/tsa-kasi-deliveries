@@ -1,0 +1,16 @@
+store_name,product_name,price,category,description,available
+McDonald's Modimolle,Big Mac,45.90,Burgers,Two beef patties with special sauce,TRUE
+McDonald's Modimolle,Quarter Pounder,42.90,Burgers,Quarter pound beef patty,TRUE
+McDonald's Modimolle,McChicken,39.90,Chicken,Crispy chicken burger,TRUE
+McDonald's Modimolle,6pc McNuggets,35.90,Chicken,Chicken nuggets,TRUE
+McDonald's Modimolle,Medium Fries,18.90,Sides,Classic fries,TRUE
+McDonald's Modimolle,Large Fries,21.90,Sides,Classic fries,TRUE
+McDonald's Modimolle,Coca-Cola Medium,15.90,Drinks,Soft drink,TRUE
+McDonald's Modimolle,Coca-Cola Large,18.90,Drinks,Soft drink,TRUE
+McDonald's Modimolle,McFlurry Oreo,28.90,Desserts,Ice cream with Oreo,TRUE
+McDonald's Modimolle,Apple Pie,12.90,Desserts,Baked apple pie,TRUE
+Checkers Modimolle,White Bread,14.99,Groceries,Loaf of bread,TRUE
+Checkers Modimolle,Fresh Milk 2L,24.99,Groceries,Full cream milk,TRUE
+Checkers Modimolle,Eggs 18s,45.99,Groceries,Large eggs,TRUE
+Pick n Pay Modimolle,Coca-Cola 2L,21.99,Beverages,Soft drink,TRUE
+Pick n Pay Modimolle,Oranges 1kg,29.99,Fresh Produce,Navel oranges,TRUE

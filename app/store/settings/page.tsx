@@ -23,7 +23,13 @@ export default function StoreSettings() {
     description: '',
     address: '',
     phone: '',
-    email: ''
+    email: '',
+    // Banking details
+    bank_name: '',
+    account_holder_name: '',
+    account_number: '',
+    account_type: '' as '' | 'savings' | 'current' | 'cheque',
+    branch_code: ''
   })
 
   useEffect(() => {
@@ -54,9 +60,15 @@ export default function StoreSettings() {
       setFormData({
         name: data.name || '',
         description: data.description || '',
-        address: data.address || '',
-        phone: data.phone || '',
-        email: data.email || ''
+        address: data.street_address || '',
+        phone: data.phone_number || '',
+        email: data.email || '',
+        // Banking details
+        bank_name: data.bank_name || '',
+        account_holder_name: data.account_holder_name || '',
+        account_number: data.account_number || '',
+        account_type: data.account_type || '',
+        branch_code: data.branch_code || ''
       })
     }
 
@@ -74,9 +86,15 @@ export default function StoreSettings() {
       .update({
         name: formData.name,
         description: formData.description,
-        address: formData.address,
-        phone: formData.phone,
-        email: formData.email
+        street_address: formData.address,
+        phone_number: formData.phone,
+        // Banking details
+        bank_name: formData.bank_name || null,
+        account_holder_name: formData.account_holder_name || null,
+        account_number: formData.account_number || null,
+        account_type: formData.account_type || null,
+        branch_code: formData.branch_code || null,
+        banking_details_updated_at: new Date().toISOString()
       })
       .eq('id', storeSession.storeId)
 
@@ -236,6 +254,130 @@ export default function StoreSettings() {
               className="bg-gradient-to-r from-kasi-orange to-orange-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-kasi-orange/30 hover:shadow-xl hover:shadow-kasi-orange/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Banking Details Form */}
+      <div className="bg-gray-900/80 backdrop-blur border border-gray-800 rounded-2xl shadow-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-800">
+          <h2 className="text-xl font-bold text-white">Banking Details</h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Add your banking details to receive payments from sales
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Bank Name *
+            </label>
+            <select
+              value={formData.bank_name}
+              onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+              className="w-full px-4 py-2 bg-gray-800/50 backdrop-blur border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-kasi-orange focus:border-kasi-orange transition-all"
+            >
+              <option value="">Select a bank</option>
+              <option value="ABSA">ABSA</option>
+              <option value="African Bank">African Bank</option>
+              <option value="Capitec">Capitec</option>
+              <option value="Discovery Bank">Discovery Bank</option>
+              <option value="FNB">FNB (First National Bank)</option>
+              <option value="Investec">Investec</option>
+              <option value="Nedbank">Nedbank</option>
+              <option value="Standard Bank">Standard Bank</option>
+              <option value="TymeBank">TymeBank</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Account Holder Name *
+            </label>
+            <input
+              type="text"
+              value={formData.account_holder_name}
+              onChange={(e) => setFormData({ ...formData, account_holder_name: e.target.value })}
+              className="w-full px-4 py-2 bg-gray-800/50 backdrop-blur border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-kasi-orange focus:border-kasi-orange transition-all"
+              placeholder="Full name on bank account"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Account Number *
+              </label>
+              <input
+                type="text"
+                value={formData.account_number}
+                onChange={(e) => setFormData({ ...formData, account_number: e.target.value.replace(/\D/g, '') })}
+                className="w-full px-4 py-2 bg-gray-800/50 backdrop-blur border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-kasi-orange focus:border-kasi-orange transition-all font-mono"
+                placeholder="1234567890"
+                maxLength={16}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Account Type *
+              </label>
+              <select
+                value={formData.account_type}
+                onChange={(e) => setFormData({ ...formData, account_type: e.target.value as any })}
+                className="w-full px-4 py-2 bg-gray-800/50 backdrop-blur border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-kasi-orange focus:border-kasi-orange transition-all"
+              >
+                <option value="">Select account type</option>
+                <option value="savings">Savings</option>
+                <option value="current">Current</option>
+                <option value="cheque">Cheque</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Branch Code
+            </label>
+            <input
+              type="text"
+              value={formData.branch_code}
+              onChange={(e) => setFormData({ ...formData, branch_code: e.target.value.replace(/\D/g, '') })}
+              className="w-full px-4 py-2 bg-gray-800/50 backdrop-blur border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-kasi-orange focus:border-kasi-orange transition-all font-mono"
+              placeholder="123456"
+              maxLength={6}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Some banks use a universal branch code (e.g., Capitec: 470010)
+            </p>
+          </div>
+
+          {storeData?.banking_details_verified && (
+            <div className="bg-green-900/20 border border-green-700 rounded-xl p-4">
+              <p className="text-sm text-green-300 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Banking details verified by admin
+              </p>
+            </div>
+          )}
+
+          <div className="bg-blue-900/20 border border-blue-700 rounded-xl p-4">
+            <p className="text-sm text-blue-300">
+              <strong>Note:</strong> Your banking details are securely stored and will be used for weekly payouts. Make sure all information is accurate to avoid payment delays.
+            </p>
+          </div>
+
+          <div className="pt-4 border-t border-gray-800">
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-gradient-to-r from-kasi-orange to-orange-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-kasi-orange/30 hover:shadow-xl hover:shadow-kasi-orange/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {saving ? 'Saving...' : 'Save Banking Details'}
             </button>
           </div>
         </form>

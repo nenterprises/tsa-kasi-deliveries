@@ -12,7 +12,7 @@ interface StoreSession {
 export default function StoreOrders() {
   const [storeSession, setStoreSession] = useState<StoreSession | null>(null)
   const [orders, setOrders] = useState<any[]>([])
-  const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'preparing' | 'ready_for_pickup'>('all')
+  const [filter, setFilter] = useState<'all' | 'pending' | 'received' | 'purchased' | 'on_the_way' | 'paid' | 'unpaid'>('all')
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const router = useRouter()
@@ -98,7 +98,11 @@ export default function StoreOrders() {
 
   const filteredOrders = filter === 'all' 
     ? orders 
-    : orders.filter(order => order.status === filter)
+    : filter === 'paid'
+      ? orders.filter(order => order.payment_status === 'paid')
+      : filter === 'unpaid'
+        ? orders.filter(order => order.payment_status !== 'paid')
+        : orders.filter(order => order.status === filter)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -138,7 +142,7 @@ export default function StoreOrders() {
 
       {/* Filter Tabs */}
       <div className="bg-gray-900/80 backdrop-blur border border-gray-800 rounded-2xl p-3 flex gap-3 overflow-x-auto hide-scrollbar">
-        {['all', 'pending', 'received', 'purchased', 'on_the_way'].map((status) => (
+        {['all', 'pending', 'received', 'purchased', 'on_the_way', 'paid', 'unpaid'].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status as any)}
@@ -153,9 +157,14 @@ export default function StoreOrders() {
              status === 'received' ? 'Accepted' :
              status === 'purchased' ? 'Purchased' :
              status === 'on_the_way' ? 'In Transit' :
+             status === 'paid' ? '✓ Paid' :
+             status === 'unpaid' ? '💰 Unpaid' :
              status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             <span className="ml-2 text-xs">
-              ({status === 'all' ? orders.length : orders.filter(o => o.status === status).length})
+              ({status === 'all' ? orders.length : 
+                status === 'paid' ? orders.filter(o => o.payment_status === 'paid').length :
+                status === 'unpaid' ? orders.filter(o => o.payment_status !== 'paid').length :
+                orders.filter(o => o.status === status).length})
             </span>
           </button>
         ))}

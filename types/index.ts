@@ -41,6 +41,14 @@ export interface Store {
   status: StoreStatus
   custom_orders_only: boolean
   access_code?: string
+  // Banking details
+  bank_name?: string
+  account_holder_name?: string
+  account_number?: string
+  account_type?: 'savings' | 'current' | 'cheque'
+  branch_code?: string
+  banking_details_verified?: boolean
+  banking_details_updated_at?: string
   created_at: string
   updated_at: string
 }
