@@ -72,9 +72,15 @@ export default function StoreDashboard() {
     if (data) {
       setStoreData(data)
       // Check if profile is incomplete (missing banking details or description)
-      const isIncomplete = !data.description || !data.phone_number || 
-                          !data.bank_name || !data.account_number
+      // Only show wizard if ANY required field is missing or empty
+      const isIncomplete = !data.description?.trim() || 
+                          !data.phone_number?.trim() || 
+                          !data.bank_name?.trim() || 
+                          !data.account_number?.trim()
       setShowWizard(isIncomplete)
+    } else {
+      // If no data, don't show wizard (prevents errors)
+      setShowWizard(false)
     }
   }
   const loadDashboardData = async (storeId: string) => {

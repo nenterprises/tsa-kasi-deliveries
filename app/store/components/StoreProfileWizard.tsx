@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
 interface StoreProfileWizardProps {
@@ -11,6 +11,7 @@ interface StoreProfileWizardProps {
 export default function StoreProfileWizard({ storeId, onComplete }: StoreProfileWizardProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
     description: '',
@@ -28,6 +29,43 @@ export default function StoreProfileWizard({ storeId, onComplete }: StoreProfile
     close_time: '18:00',
     operating_days: 'Mon-Sun'
   })
+
+  // Load existing store data on mount
+  useEffect(() => {
+    loadStoreData()
+  }, [storeId])
+
+  const loadStoreData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('id', storeId)
+        .single()
+
+      if (error) throw error
+
+      if (data) {
+        // Prefill form with existing data
+        setFormData({
+          description: data.description || '',
+          phone_number: data.phone_number || '',
+          bank_name: data.bank_name || '',
+          account_holder_name: data.account_holder_name || '',
+          account_number: data.account_number || '',
+          account_type: data.account_type || '',
+          branch_code: data.branch_code || '',
+          open_time: data.open_time || '08:00',
+          close_time: data.close_time || '18:00',
+          operating_days: data.operating_days || 'Mon-Sun'
+        })
+      }
+    } catch (error) {
+      console.error('Error loading store data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleNext = () => {
     if (currentStep < 3) {
@@ -74,6 +112,17 @@ export default function StoreProfileWizard({ storeId, onComplete }: StoreProfile
   const isStep1Valid = formData.description && formData.phone_number
   const isStep2Valid = formData.bank_name && formData.account_holder_name && 
                        formData.account_number && formData.account_type
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kasi-orange mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading store data...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">

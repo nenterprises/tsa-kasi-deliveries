@@ -2,18 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Store } from '@/types'
+import { Store, Product } from '@/types'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCart } from '@/lib/CartContext'
 import { useActiveOrdersCount } from '@/lib/useActiveOrders'
 import { ShoppingCart, Store as StoreIcon, Utensils, Beer, ShoppingBasket, Package, MapPin, Phone, Clock, User } from 'lucide-react'
+import StoreProductPreview from './StoreProductPreview'
 
 export default function StoresPage() {
   const router = useRouter()
   const { totalItems } = useCart()
   const { count: activeOrdersCount } = useActiveOrdersCount()
   const [stores, setStores] = useState<Store[]>([])
+  const [storeProducts, setStoreProducts] = useState<Record<string, Product[]>>({})
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -53,6 +55,27 @@ export default function StoresPage() {
 
       if (error) throw error
       setStores(data || [])
+      
+      // Fetch products for each store
+      if (data && data.length > 0) {
+        const productsMap: Record<string, Product[]> = {}
+        
+        for (const store of data) {
+          const { data: products } = await supabase
+            .from('products')
+            .select('*')
+            .eq('store_id', store.id)
+            .eq('available', true)
+            .limit(10)
+            .order('name')
+          
+          if (products && products.length > 0) {
+            productsMap[store.id] = products
+          }
+        }
+        
+        setStoreProducts(productsMap)
+      }
     } catch (error) {
       console.error('Error fetching stores:', error)
     } finally {
@@ -272,12 +295,15 @@ export default function StoresPage() {
                       Custom Request Only
                     </Link>
                   ) : (
-                    <Link
-                      href={`/customer/store/${store.id}`}
-                      className="block w-full text-center bg-kasi-orange hover:bg-opacity-90 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition duration-200 text-sm sm:text-base"
-                    >
-                      Browse Products
-                    </Link>
+                    <>
+                      {/* Product Preview Slideshow */}
+                      {storeProducts[store.id] && storeProducts[store.id].length > 0 && (
+                        <StoreProductPreview 
+                          storeId={store.id}
+                          products={storeProducts[store.id]}
+                        />
+                      )}
+                    </>
                   )}
                 </div>
               </div>

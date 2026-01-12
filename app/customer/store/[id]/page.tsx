@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Store, Product, Category } from '@/types'
 import { useCart } from '@/lib/CartContext'
 import { ShoppingCart, MapPin, Phone, Clock } from 'lucide-react'
+import ProductSlideshow from '../components/ProductSlideshow'
 
 export default function StorePage() {
   const params = useParams()
@@ -179,6 +180,16 @@ export default function StorePage() {
           className="w-full px-4 py-2.5 sm:py-3 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-kasi-blue focus:border-transparent text-sm sm:text-base"
         />
       </div>
+
+      {/* Product Slideshow */}
+      {products.length > 0 && (
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-6 sm:pb-8">
+          <ProductSlideshow 
+            products={products.slice(0, 20)} 
+            onProductClick={handleAddToCart}
+          />
+        </div>
+      )}
 
       {/* Products + Sidebar */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-12">

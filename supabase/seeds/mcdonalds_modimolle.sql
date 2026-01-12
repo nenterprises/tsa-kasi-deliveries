@@ -8,11 +8,13 @@ WITH new_store AS (
   INSERT INTO stores (
     name, category, phone_number, description,
     street_address, township, town, gps_latitude, gps_longitude,
-    open_time, close_time, operating_days, status, custom_orders_only
+    open_time, close_time, operating_days, status, custom_orders_only,
+    bank_name, account_holder_name, account_number, account_type, branch_code
   ) VALUES (
     'McDonald''s Modimolle', 'restaurant', '010 123 4567', 'McDonald''s Modimolle – burgers, meals, and more.',
     'Modimolle (Nylstroom) Town Centre', 'Modimolle', 'modimolle', NULL, NULL,
-    '07:00', '23:00', 'Mon-Sun', 'active', FALSE
+    '07:00', '23:00', 'Mon-Sun', 'active', FALSE,
+    'FNB', 'McDonald''s Modimolle', '1234567890', 'current', '250655'
   )
   RETURNING id
 )
