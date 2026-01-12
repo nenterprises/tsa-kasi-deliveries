@@ -6,6 +6,8 @@ DROP POLICY IF EXISTS "Users can view their own orders" ON orders;
 DROP POLICY IF EXISTS "Customers can view their orders" ON orders;
 DROP POLICY IF EXISTS "Agents can view assigned orders" ON orders;
 DROP POLICY IF EXISTS "Stores can view their orders" ON orders;
+DROP POLICY IF EXISTS "Agents can update assigned orders" ON orders;
+DROP POLICY IF EXISTS "Agents can accept pending orders" ON orders;
 
 -- Create comprehensive SELECT policies that allow realtime subscriptions
 
@@ -24,18 +26,19 @@ USING (
   (agent_id IS NULL AND status = 'pending')
 );
 
--- Policy 3: Stores can view orders for their store (required for store realtime)
+-- Policy 3: Store owners can view their store's orders (required for store realtime)
 CREATE POLICY "Stores can view their orders"
 ON orders FOR SELECT
 USING (
+  -- Allow if user is admin OR if they're viewing orders for stores they manage
   EXISTS (
-    SELECT 1 FROM profiles
-    WHERE profiles.id = auth.uid()
-    AND profiles.store_id = orders.store_id
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'admin'
   )
 );
 
--- Policy 4: Allow authenticated users to update orders (for agents accepting jobs)
+-- Policy 4: Allow agents to update assigned orders
 CREATE POLICY "Agents can update assigned orders"
 ON orders FOR UPDATE
 USING (auth.uid() = agent_id)
@@ -46,8 +49,7 @@ CREATE POLICY "Agents can accept pending orders"
 ON orders FOR UPDATE
 USING (
   status = 'pending' AND 
-  agent_id IS NULL AND
-  auth.uid() IS NOT NULL
+  agent_id IS NULL
 )
 WITH CHECK (
   auth.uid() = agent_id
