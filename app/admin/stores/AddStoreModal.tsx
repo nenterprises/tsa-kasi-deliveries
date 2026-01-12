@@ -244,6 +244,7 @@ export default function AddStoreModal({ onClose, onSuccess }: AddStoreModalProps
                   <option value="alcohol">Alcohol</option>
                   <option value="groceries">Groceries</option>
                   <option value="restaurant">Restaurant</option>
+                  <option value="pharmacy">Pharmacy & Health</option>
                   <option value="other">Other</option>
                 </select>
               </div>
