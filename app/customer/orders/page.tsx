@@ -65,7 +65,14 @@ function OrdersContent() {
           if (order.order_type === 'product_order') {
             const { data: itemsData } = await supabase
               .from('order_items')
-              .select('*')
+              .select(`
+                *,
+                products (
+                  id,
+                  name,
+                  image_url
+                )
+              `)
               .eq('order_id', order.id)
 
             return { ...order, store: order.stores, items: itemsData || [] }
@@ -352,15 +359,31 @@ function OrdersContent() {
                     order.items && order.items.length > 0 && (
                       <div className="mb-4">
                         <h4 className="font-semibold text-gray-300 mb-2">Items:</h4>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {order.items.map((item) => (
-                            <div key={item.id} className="flex justify-between text-sm">
-                              <span className="text-gray-300">
-                                {item.quantity}x {item.product_name}
-                              </span>
-                              <span className="font-medium text-white">
-                                R{item.subtotal.toFixed(2)}
-                              </span>
+                            <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                              {item.products?.image_url && (
+                                <div className="flex-shrink-0 w-24 h-24 bg-white rounded-lg overflow-hidden">
+                                  <img 
+                                    src={item.products.image_url} 
+                                    alt={item.product_name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-gray-200 font-medium">
+                                  {item.quantity}x {item.product_name}
+                                </p>
+                                <p className="text-gray-400 text-xs mt-0.5">
+                                  R{(item.subtotal / item.quantity).toFixed(2)} each
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className="font-bold text-white">
+                                  R{item.subtotal.toFixed(2)}
+                                </p>
+                              </div>
                             </div>
                           ))}
                         </div>
