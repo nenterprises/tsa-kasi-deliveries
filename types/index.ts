@@ -119,6 +119,11 @@ export interface OrderItem {
     name?: string
     image_url?: string
   }
+  products?: {
+    id: string
+    name?: string
+    image_url?: string
+  }
 }
 
 // Agent-specific types
