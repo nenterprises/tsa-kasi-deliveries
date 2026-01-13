@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCart } from '@/lib/CartContext'
 import { useActiveOrdersCount } from '@/lib/useActiveOrders'
-import { ShoppingCart, Store as StoreIcon, Utensils, Beer, ShoppingBasket, Package, MapPin, Phone, Clock, User } from 'lucide-react'
+import { ShoppingCart, Store as StoreIcon, Utensils, Beer, ShoppingBasket, Package, MapPin, Phone, Clock, User, Search, X } from 'lucide-react'
 import StoreProductPreview from './StoreProductPreview'
 
 export default function StoresPage() {
@@ -19,6 +19,7 @@ export default function StoresPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [userName, setUserName] = useState<string>('')
 
@@ -202,14 +203,35 @@ export default function StoresPage() {
           </div>
 
           {/* Search and Filters */}
-          <div className="mt-3 sm:mt-4 flex flex-col gap-3">
-            <input
-              type="text"
-              placeholder="Search stores..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-kasi-blue focus:border-transparent text-sm sm:text-base"
-            />
+          <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            {searchOpen ? (
+              <div className="flex-1 flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Search stores..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  autoFocus
+                  className="flex-1 px-4 py-2.5 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-kasi-blue focus:border-transparent text-sm sm:text-base"
+                />
+                <button
+                  onClick={() => {
+                    setSearchOpen(false)
+                    setSearchTerm('')
+                  }}
+                  className="p-2.5 bg-gray-800 border border-gray-700 text-gray-400 hover:text-white rounded-lg hover:bg-gray-700 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-2.5 bg-gray-800 border border-gray-700 text-gray-400 hover:text-white rounded-lg hover:bg-gray-700 transition flex items-center justify-center sm:w-auto w-full"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+            )}
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}

@@ -184,6 +184,23 @@ function OrdersContent() {
     return status
   }
 
+  const getStoreCategoryBadge = (category?: string) => {
+    const badges: Record<string, { label: string; colors: string }> = {
+      tuck_shop: { label: 'Shop', colors: 'bg-gradient-to-r from-indigo-500/20 to-blue-500/20 text-blue-200 border-blue-500/40' },
+      takeaways: { label: 'Food', colors: 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-amber-200 border-amber-500/40' },
+      alcohol: { label: 'Liquor', colors: 'bg-gradient-to-r from-purple-500/20 to-violet-500/20 text-violet-200 border-violet-500/40' },
+      groceries: { label: 'Grocery', colors: 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-teal-200 border-teal-500/40' },
+      restaurant: { label: 'Dining', colors: 'bg-gradient-to-r from-rose-500/20 to-pink-500/20 text-pink-200 border-pink-500/40' },
+      other: { label: 'Store', colors: 'bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-slate-200 border-slate-500/40' },
+    }
+    const badge = badges[category || 'other'] || badges.other
+    return (
+      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${badge.colors}`}>
+        {badge.label}
+      </span>
+    )
+  }
+
   const getStatusColor = (status: string) => {
     status = normalizeStatus(status)
     const colors: Record<string, string> = {
@@ -319,9 +336,12 @@ function OrdersContent() {
                       <p className="text-xs sm:text-sm text-gray-400">
                         Order #{order.id.slice(0, 8)} • {new Date(order.created_at).toLocaleDateString()}
                       </p>
-                      <p className="font-semibold text-white mt-1 text-sm sm:text-base">
-                        🏪 {order.store?.name || 'Unknown Store'}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {getStoreCategoryBadge(order.store?.category)}
+                        <p className="font-semibold text-white text-sm sm:text-base">
+                          {order.store?.name || 'Unknown Store'}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border flex items-center ${getStatusColor(order.status)}`}>
