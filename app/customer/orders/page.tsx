@@ -29,17 +29,9 @@ import {
   ChevronRight
 } from 'lucide-react'
 
-interface OrderItemWithProduct extends OrderItem {
-  product?: {
-    id: string
-    name?: string
-    image_url?: string
-  }
-}
-
 interface OrderWithDetails extends Order {
   store?: Store
-  items?: OrderItemWithProduct[]
+  items?: OrderItem[]
 }
 
 function OrdersContent() {
@@ -370,10 +362,10 @@ function OrdersContent() {
                         <div className="space-y-3">
                           {order.items.map((item) => (
                             <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
-                              {item.product?.image_url && (
-                                <div className="flex-shrink-0 w-24 h-24 bg-gray-700 rounded-lg overflow-hidden">
+                              {item.products?.image_url && (
+                                <div className="flex-shrink-0 w-24 h-24 bg-white rounded-lg overflow-hidden">
                                   <img 
-                                    src={item.product.image_url} 
+                                    src={item.products.image_url} 
                                     alt={item.product_name}
                                     className="w-full h-full object-cover"
                                   />
